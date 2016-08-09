@@ -50,8 +50,8 @@
          <center>
             <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" BorderPane.alignment="CENTER">
               <columnConstraints>
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="134.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="425.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="264.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="295.0" />
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="116.6666259765625" />
               </columnConstraints>
               <rowConstraints>
@@ -61,8 +61,9 @@
               </rowConstraints>
                <children>
                   <TableView fx:id="table_log" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true" GridPane.columnSpan="3" GridPane.rowIndex="1" GridPane.rowSpan="2" />
-                  <Button fx:id="btn_clear" mnemonicParsing="false" text="clear" GridPane.columnIndex="1" />
-                  <Button fx:id="btn_start" mnemonicParsing="false" text="start" />
+                  <Button mnemonicParsing="false" onAction="#on_btn_clear" text="clear" />
+                  <Button fx:id="btn_start" mnemonicParsing="false" onAction="#on_btn_start" text="start" GridPane.columnIndex="1" />
+                  <Button mnemonicParsing="false" onAction="#on_btn_stop" text="stop" GridPane.columnIndex="2" />
                </children>
             </GridPane>
          </center>

@@ -128,16 +128,24 @@
                (.scrollTo table (- size 1)))))))))
 
 
+(defprotocol IMainWindow
+  (start [this arr])
+  (clear [this arr])
+  (stop [this arr])
+  )
 
-(definterface IMainWindow
+
+(definterface IMainWindowFX
   (close [])
-  (^{:tag void} helloworld [^javafx.event.ActionEvent event]))
+  (^{:tag void} on_btn_start [^javafx.event.ActionEvent event])
+  (^{:tag void} on_btn_clear [^javafx.event.ActionEvent event])
+  (^{:tag void} on_btn_stop [^javafx.event.ActionEvent event]))
 
 
 (deftype MainWindow
     [proc_adb
+     table_contents
      ^{FXML [] :unsynchronized-mutable true} btn_start
-     ^{FXML [] :unsynchronized-mutable true} btn_clear
      ^{FXML [] :unsynchronized-mutable true} table_log]
 
   javafx.fxml.Initializable
@@ -154,35 +162,50 @@
                       (mapv (fn [x]
                               (doto (TableColumn. (str x))
                                 (.setCellValueFactory (MapValueFactory. (keyword x))))))))))
-   (let [arr (FXCollections/observableArrayList [])]
-     (doto table_log
-       (.setItems arr)
-       (auto-scroll))
 
-     (m/fx-action btn_clear (.clear arr))
-     (m/fx-action btn_start (do
-                              (reset! proc_adb (watcher/new-watcher))
-                              (watcher/run @proc_adb (fn [ch]
-                                                      (async->tableobservable ch arr))))))
+
 
    ;; (.setUseSystemMenuBar menu_bar true)
    )
   IMainWindow
-  (close [this]
-    (when-not (nil? @proc_adb)
-      (watcher/dispose @proc_adb)
-      (reset! @proc_adb nil)))
+  (start [this arr]
+    (println "start"))
+  (clear [this arr]
+    (println "clear"))
+  (stop [this arr]
+    (println "stop"))
 
-  (^{:tag void FXML []} helloworld [this, ^javafx.event.ActionEvent event]
-   (println "helloworld 22")))
+  IMainWindowFX
+  (close [this]
+    (.on_btn_stop this nil))
+  (^{:tag void} on_btn_start [this ^javafx.event.ActionEvent event]
+   (doto this
+     (.on_btn_stop event)
+     (.on_btn_clear event))
+   (doto table_log
+     (.setItems table_contents)
+     (auto-scroll))
+   (reset! proc_adb (watcher/new-watcher))
+   (watcher/run @proc_adb
+     #(async->tableobservable % table_contents)))
+
+  (^{:tag void} on_btn_clear [this ^javafx.event.ActionEvent event]
+   (.clear table_contents))
+
+  (^{:tag void} on_btn_stop [this ^javafx.event.ActionEvent event]
+   (when-let [proc @proc_adb]
+     (watcher/dispose ^watcher/Watcher proc)
+     (reset! proc_adb nil))))
+
+
 
 
 (defn gen-MainWindow []
   (->MainWindow
-   (atom nil)                           ;proc_adb
-   nil                                  ;btn_start
-   nil                                  ;btn_stop
-   nil                                  ;table_log
+   (atom nil)                             ;proc_adb
+   (FXCollections/observableArrayList []) ;table_contents
+   nil                                    ;btn_start
+   nil                                    ;table_log
    ))
 
 

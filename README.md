@@ -19,15 +19,15 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 
 
 ## TODO
-[ ] open log
-[ ] filter, save/load
-[ ] source open if unity log
-[ ] event, kernel log
-[ ] excutable
-[ ] bookmark
-[ ] maybe
-  [ ] plugin
-  [ ] diff
+- [ ] open log
+- [ ] filter, save/load
+- [ ] source open if unity log
+- [ ] event, kernel log
+- [ ] excutable
+- [ ] bookmark
+- [ ] maybe
+   - [ ] plugin
+   - [ ] diff
 
 [iookill/LogFilter]: https://github.com/iookill/LogFilter
 [Clojure]: https://clojure.org/
