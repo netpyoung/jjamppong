@@ -84,7 +84,7 @@
      ^:unsynchronized-mutable channel
      ^:unsynchronized-mutable proc]
   impl/IWatcher
-  (run [this async->fn]
+  (run [this]
     (when channel
       (impl/stop this))
     (set! channel (async/chan 100))
@@ -93,8 +93,8 @@
           tap-file (async/tap mult (async/chan 200))
           tap-out (async/tap mult (async/chan 200))]
       (async->filewriter tap-file (gen-filename))
-      (async->fn tap-out)
-      (set! proc (async<-lineseq channel command))))
+      (set! proc (async<-lineseq channel command))
+      tap-out))
   (stop [this]
     (.destroyForcibly proc)
     (async/close! channel)

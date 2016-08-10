@@ -19,6 +19,8 @@
    [javafx.fxml FXMLLoader FXML]
    [javafx.stage Stage StageBuilder]
    [javafx.scene Scene]
+   [javafx.collections.transformation FilteredList]
+
    [javafx.scene.control Button Alert Alert$AlertType TableColumn TableView SelectionMode]
    [javafx.scene.control.cell PropertyValueFactory MapValueFactory]
    [javafx.scene.input KeyCode KeyCodeCombination KeyCombination KeyEvent KeyCombination$Modifier
@@ -106,13 +108,16 @@
       (map->Log)))
 
 
+(def +GLOBAL_LOCK+ (Object.))
+
 (defn async->tableobservable [ch observable]
   (async/go
     (loop []
       (when-let [line (async/<! ch)]
-        (->> line
-             (logline->Log)
-             (.add observable))
+        (locking +GLOBAL_LOCK+
+          (->> line
+               (logline->Log)
+               (.add observable)))
         (recur)))))
 
 
@@ -128,20 +133,37 @@
              (when (pos? size)
                (.scrollTo table (- size 1)))))))))
 
+(defn ^java.util.function.Predicate f-to-predicate [f]
+  ;; https://github.com/clojurewerkz/ogre/blob/master/src/clojure/clojurewerkz/ogre/util.clj
+  "Converts a function to java.util.function.Predicate."
+  (reify java.util.function.Predicate
+    (test [this arg] (f arg))))
+
+
 
 (definterface IMainWindowFX
   (close [])
+
   (^{:tag void} on_btn_start [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_clear [^javafx.event.ActionEvent event])
-  (^{:tag void} on_btn_stop [^javafx.event.ActionEvent event]))
+  (^{:tag void} on_btn_stop [^javafx.event.ActionEvent event])
+  (^{:tag void} on_check_lvl [^javafx.event.ActionEvent event])
+  )
 
 
 (deftype MainWindow
     [proc_adb
      table_contents
+     filtered
      ^{FXML [] :unsynchronized-mutable true} btn_clear
      ^{FXML [] :unsynchronized-mutable true} btn_start
      ^{FXML [] :unsynchronized-mutable true} btn_stop
+     ^{FXML [] :unsynchronized-mutable true} check_lvl_v
+     ^{FXML [] :unsynchronized-mutable true} check_lvl_d
+     ^{FXML [] :unsynchronized-mutable true} check_lvl_i
+     ^{FXML [] :unsynchronized-mutable true} check_lvl_w
+     ^{FXML [] :unsynchronized-mutable true} check_lvl_e
+     ^{FXML [] :unsynchronized-mutable true} check_lvl_f
      ^{FXML [] :unsynchronized-mutable true} table_log]
 
   javafx.fxml.Initializable
@@ -176,7 +198,8 @@
 
   IMainWindowFX
   (close [this]
-    (.on_btn_stop this nil))
+    (impl/init this))
+
   (^{:tag void} on_btn_start [this ^javafx.event.ActionEvent event]
    (doto this
      (.on_btn_stop event)
@@ -185,31 +208,57 @@
    (.setDisable btn_start true)
    (.setDisable btn_stop false)
    (doto table_log
-     (.setItems table_contents)
+     (.setItems filtered)
      ;; (auto-scroll)
      )
    (reset! proc_adb (watcher/new-watcher))
-   (impl/run @proc_adb
-     #(async->tableobservable % table_contents)))
+   (let [ch (impl/run @proc_adb)]
+     (async->tableobservable ch table_contents)))
 
   (^{:tag void} on_btn_clear [this ^javafx.event.ActionEvent event]
    (.clear table_contents))
 
   (^{:tag void} on_btn_stop [this ^javafx.event.ActionEvent event]
-   (impl/init this)))
+   (impl/init this))
+
+  (^{:tag void} on_check_lvl [this ^javafx.event.ActionEvent event]
+   (locking +GLOBAL_LOCK+
+     (.setPredicate
+      filtered
+      (f-to-predicate (fn [p]
+                        (let [level (:level p)]
+                          (condp = level
+                            "V" (.isSelected check_lvl_v)
+                            "D" (.isSelected check_lvl_d)
+                            "I" (.isSelected check_lvl_i)
+                            "W" (.isSelected check_lvl_w)
+                            "E" (.isSelected check_lvl_e)
+                            "F" (.isSelected check_lvl_f)
+                            true))))))
+   (println "on-check-lvl")))
 
 
 
 
 (defn gen-MainWindow []
-  (->MainWindow
-   (atom nil)                             ;proc_adb
-   (FXCollections/observableArrayList []) ;table_contents
-   nil                                    ;btn_clear
-   nil                                    ;btn_start
-   nil                                    ;btn_stop
-   nil                                    ;table_log
-   ))
+  (let [observable (FXCollections/observableArrayList [])
+        filtered (FilteredList. observable
+                                (f-to-predicate (fn [p] true)))]
+    (->MainWindow
+     (atom nil)                             ;proc_adb
+     observable                             ;table_contents
+     filtered                               ;filtered
+     nil                                    ;btn_clear
+     nil                                    ;btn_start
+     nil                                    ;btn_stop
+     nil                                    ;check_lvl_v
+     nil                                    ;check_lvl_d
+     nil                                    ;check_lvl_i
+     nil                                    ;check_lvl_w
+     nil                                    ;check_lvl_e
+     nil                                    ;check_lvl_f
+     nil                                    ;table_log
+     )))
 
 
 (defrecord Window [is-dev _stage _window]

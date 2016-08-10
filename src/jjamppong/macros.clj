@@ -1,4 +1,8 @@
-(ns jjamppong.macros)
+(ns jjamppong.macros
+  (:import
+   [javafx.fxml FXMLLoader FXML]))
+
+
 
 (defmacro fx-action [node action]
   `(.setOnAction ~node

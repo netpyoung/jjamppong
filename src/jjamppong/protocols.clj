@@ -1,7 +1,7 @@
 (ns jjamppong.protocols)
 
 (defprotocol IWatcher
-  (run [this async->fn])
+  (run [this])
   (stop [this]))
 
 (defprotocol IMainWindow
