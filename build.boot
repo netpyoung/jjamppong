@@ -11,6 +11,7 @@
    [funcool/beicon "2.2.0"]
    [org.clojure/core.async "0.2.385"]
    [named-re "1.0.0"]
+   [nio "1.0.3"]
 
    ;; boot
    [boot-environ "1.0.3" :scope "test"]

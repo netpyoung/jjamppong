@@ -3,6 +3,7 @@
    [system.repl :refer [system]]
    [com.stuartsierra.component :as component]
    [jjamppong.macros :as m]
+   [jjamppong.protocols :as impl]
    [jjamppong.watcher :as watcher]
    [clojure.reflect :as r]
    [named-re.re :as re]
@@ -188,7 +189,7 @@
      ;; (auto-scroll)
      )
    (reset! proc_adb (watcher/new-watcher))
-   (watcher/run @proc_adb
+   (impl/run @proc_adb
      #(async->tableobservable % table_contents)))
 
   (^{:tag void} on_btn_clear [this ^javafx.event.ActionEvent event]
@@ -196,7 +197,7 @@
 
   (^{:tag void} on_btn_stop [this ^javafx.event.ActionEvent event]
    (when-let [proc @proc_adb]
-     (watcher/dispose proc)
+     (impl/stop proc)
      (reset! proc_adb nil))
    (.setDisable btn_start false)))
 

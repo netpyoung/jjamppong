@@ -1,72 +1,75 @@
 (ns jjamppong.watcher
-  (:import [java.lang ProcessBuilder])
+  (:import [java.lang ProcessBuilder]
+           [java.nio.file Files Paths OpenOption StandardOpenOption])
   (:require
+   [jjamppong.protocols :as impl]
    [system.repl :refer [system]]
    [com.stuartsierra.component :as component]
    [clojure.java.io :as io]
+   [nio.core :as nio]
    [clojure.string :as str]
    [clojure.core.async :as async]))
 
 
-(defn cmd->input-stream [cmd]
-  (.. Runtime
-      (getRuntime)
-      (exec cmd)
-      (getInputStream))
-  ;; (-> (ProcessBuilder. ["adb" "logcat" "192.168.58.101:5555"])
-  ;;     (.start)
-  ;;     (.getInputStream)
-  ;;     )
-  ;; (clojure.java.io/reader))
-  )
+;; (defn cmd->reader [cmd]
+;;   ;; (.. Runtime
+;;   ;;     (getRuntime)
+;;   ;;     (exec cmd)
+;;   ;;     (getInputStream))
+;;   (-> (ProcessBuilder. ["adb" "logcat" "192.168.58.101:5555"])
+;;       (.start)
+;;       (.getInputStream)
+;;       (clojure.java.io/reader)))
 
 
-(defn cmd->line-seq [cmd]
-  (->> cmd
-       (cmd->input-stream)
-       ((fn [x] (println cmd " " x) x))
-       (java.io.InputStreamReader.)
-       (java.io.BufferedReader.)
-       (line-seq)))
-
-
-(defn get-devices []
-  (->> "adb devices"
-       (cmd->line-seq)
-       (filter #(re-matches #"[0-9].*" %))
-       (map #(str/replace % #"\tdevice" ""))
-       (map #(str/replace % #"\toffline" ""))))
+;; (defn get-devices []
+;;   (->> "adb devices"
+;;        (cmd->line-seq)
+;;        (filter #(re-matches #"[0-9].*" %))
+;;        (map #(str/replace % #"\tdevice" ""))
+;;        (map #(str/replace % #"\toffline" ""))))
 
 
 (defn fpath->writer [fpath]
-  (-> fpath
-      (java.io.FileOutputStream.)
-      (java.io.OutputStreamWriter. "UTF-8")
-      (java.io.BufferedWriter.))
-  ;; (-> fpath
-  ;;     (clojure.java.io/writer))
-  )
+  (-> (str "file:///Users/pyoung/temp/jjamppong/" fpath)
+      (java.net.URI.)
+      (Paths/get)
+      (Files/newOutputStream
+       (into-array OpenOption
+                   [StandardOpenOption/CREATE StandardOpenOption/APPEND]))
+      (java.io.BufferedOutputStream.)
+      (clojure.java.io/writer)))
 
 
 (defn async->filewriter [ch output-fpath]
   (async/go
     (with-open [writer (fpath->writer output-fpath)]
       (loop []
-        (.flush writer)
         (when-let [line (async/<! ch)]
           (doto writer
-            (.write (str line "\r\n")))
+            (.write (str line "\r\n"))
+            (.flush))
           (recur))))))
 
 
 (defn async<-lineseq [ch cmd]
-  (async/go
-    (loop [[fst & rst] (cmd->line-seq cmd)]
-      (if (nil? fst)
-        (async/close! ch)
-        (do
-          (async/>! ch fst)
-          (recur rst))))))
+  (let [pb (ProcessBuilder. cmd)
+        proc (.start pb)
+        in (.getInputStream proc)
+        out (.getOutputStream proc)
+        err (.getErrorStream proc)
+        reader (clojure.java.io/reader in)]
+    (async/go
+      (loop [[fst & rst] (line-seq reader)]
+        (if (nil? fst)
+          (do
+            (.close in)
+            (.close out)
+            (.close err))
+          (do
+            (async/>! ch fst)
+            (recur rst)))))
+    proc))
 
 
 (defn gen-filename []
@@ -76,35 +79,32 @@
       (str ".log")))
 
 
-(defprotocol IWatcher
-  (run [this async->fn])
-  (dispose [this]))
-
-
 (deftype Watcher
     [command
-     ^:unsynchronized-mutable channel]
-  IWatcher
+     ^:unsynchronized-mutable channel
+     ^:unsynchronized-mutable proc]
+  impl/IWatcher
   (run [this async->fn]
     (when channel
-      (dispose this))
+      (impl/stop this))
     (set! channel (async/chan 100))
+
     (let [mult (async/mult channel)
-          tap-file (async/tap mult (async/chan 100))
-          tap-out (async/tap mult (async/chan 100))
-          filename (gen-filename)]
+          tap-file (async/tap mult (async/chan 200))
+          tap-out (async/tap mult (async/chan 200))]
+      (async->filewriter tap-file (gen-filename))
       (async->fn tap-out)
-      (async->filewriter tap-file filename)
-      (async<-lineseq channel command)
-      (println "running" filename)))
-  (dispose [this]
+      (set! proc (async<-lineseq channel command))))
+  (stop [this]
+    (.destroyForcibly proc)
     (async/close! channel)
     (set! channel nil)))
 
 
 (defn new-watcher []
-  (let [command "adb logcat"
+  (let [command "adb"
         device "192.168.58.101:5555"
-        combined-command (str command " " device)
-        channel nil]
-    (Watcher. combined-command channel)))
+        combined-command [command "logcat" device]
+        channel nil
+        proc nil]
+    (Watcher. combined-command channel proc)))
