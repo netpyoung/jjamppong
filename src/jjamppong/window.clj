@@ -139,7 +139,9 @@
 (deftype MainWindow
     [proc_adb
      table_contents
+     ^{FXML [] :unsynchronized-mutable true} btn_clear
      ^{FXML [] :unsynchronized-mutable true} btn_start
+     ^{FXML [] :unsynchronized-mutable true} btn_stop
      ^{FXML [] :unsynchronized-mutable true} table_log]
 
   javafx.fxml.Initializable
@@ -160,7 +162,17 @@
 
 
    ;; (.setUseSystemMenuBar menu_bar true)
+   (impl/init self)
    )
+
+  impl/IMainWindow
+  (init [this]
+    (when-let [proc @proc_adb]
+      (impl/stop proc)
+      (reset! proc_adb nil))
+    (.setDisable btn_clear true)
+    (.setDisable btn_start false)
+    (.setDisable btn_stop true))
 
   IMainWindowFX
   (close [this]
@@ -169,7 +181,9 @@
    (doto this
      (.on_btn_stop event)
      (.on_btn_clear event))
-   ;; (.setDisable btn_start true)
+   (.setDisable btn_clear false)
+   (.setDisable btn_start true)
+   (.setDisable btn_stop false)
    (doto table_log
      (.setItems table_contents)
      ;; (auto-scroll)
@@ -182,10 +196,7 @@
    (.clear table_contents))
 
   (^{:tag void} on_btn_stop [this ^javafx.event.ActionEvent event]
-   (when-let [proc @proc_adb]
-     (impl/stop proc)
-     (reset! proc_adb nil))
-   (.setDisable btn_start false)))
+   (impl/init this)))
 
 
 
@@ -194,7 +205,9 @@
   (->MainWindow
    (atom nil)                             ;proc_adb
    (FXCollections/observableArrayList []) ;table_contents
+   nil                                    ;btn_clear
    nil                                    ;btn_start
+   nil                                    ;btn_stop
    nil                                    ;table_log
    ))
 

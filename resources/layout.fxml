@@ -2,6 +2,7 @@
 
 <?language clojure?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
@@ -12,7 +13,9 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="572.0" prefWidth="872.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -51,8 +54,8 @@
             <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" BorderPane.alignment="CENTER">
               <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="264.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="295.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="116.6666259765625" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="194.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="218.0" />
               </columnConstraints>
               <rowConstraints>
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -61,9 +64,23 @@
               </rowConstraints>
                <children>
                   <TableView fx:id="table_log" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true" GridPane.columnSpan="3" GridPane.rowIndex="1" GridPane.rowSpan="2" />
-                  <Button mnemonicParsing="false" onAction="#on_btn_clear" text="clear" />
-                  <Button fx:id="btn_start" mnemonicParsing="false" onAction="#on_btn_start" text="start" GridPane.columnIndex="1" />
-                  <Button mnemonicParsing="false" onAction="#on_btn_stop" text="stop" GridPane.columnIndex="2" />
+                  <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="2">
+                     <children>
+                        <Button fx:id="btn_clear" mnemonicParsing="false" onAction="#on_btn_clear" text="clear" />
+                        <Button fx:id="btn_start" mnemonicParsing="false" onAction="#on_btn_start" text="start" />
+                        <Button fx:id="btn_stop" mnemonicParsing="false" onAction="#on_btn_stop" text="stop" />
+                     </children>
+                  </HBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
+                     <children>
+                        <CheckBox fx:id="check_lvl_v" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Verbose" />
+                        <CheckBox fx:id="check_lvl_d" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Debug" />
+                        <CheckBox fx:id="check_lvl_i" layoutX="10.0" layoutY="28.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Info" />
+                        <CheckBox fx:id="check_lvl_w" layoutX="10.0" layoutY="46.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Warn" />
+                        <CheckBox fx:id="check_lvl_e" layoutX="10.0" layoutY="64.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Error" />
+                        <CheckBox fx:id="check_lvl_f" layoutX="10.0" layoutY="82.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Fatal" />
+                     </children>
+                  </VBox>
                </children>
             </GridPane>
          </center>
