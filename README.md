@@ -5,6 +5,11 @@
 * this project's name is temporary. so, this repository url will be changed (maybe)
 
 
+[![jjamppong](https://img.youtube.com/vi/X9a6c1IQp0o/0.jpg)](https://www.youtube.com/watch?v=X9a6c1IQp0o)
+
+
+
+
 ## history
 When i was testing android app via `adb logcat`, It's not enough for me.
  so I'm had using [iookill/LogFilter].

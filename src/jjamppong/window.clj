@@ -129,13 +129,6 @@
                (.scrollTo table (- size 1)))))))))
 
 
-(defprotocol IMainWindow
-  (start [this arr])
-  (clear [this arr])
-  (stop [this arr])
-  )
-
-
 (definterface IMainWindowFX
   (close [])
   (^{:tag void} on_btn_start [^javafx.event.ActionEvent event])
@@ -168,13 +161,6 @@
 
    ;; (.setUseSystemMenuBar menu_bar true)
    )
-  IMainWindow
-  (start [this arr]
-    (println "start"))
-  (clear [this arr]
-    (println "clear"))
-  (stop [this arr]
-    (println "stop"))
 
   IMainWindowFX
   (close [this]
