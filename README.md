@@ -2,6 +2,8 @@
 
 `Jjamppong` is gui logcat written in [Clojure]
 
+* this project's name is temporary. so, this repository url will be changed (maybe)
+
 
 ## history
 When i was testing android app via `adb logcat`, It's not enough for me.
