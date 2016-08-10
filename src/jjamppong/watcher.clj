@@ -1,4 +1,5 @@
 (ns jjamppong.watcher
+  (:import [java.lang ProcessBuilder])
   (:require
    [system.repl :refer [system]]
    [com.stuartsierra.component :as component]
@@ -11,12 +12,19 @@
   (.. Runtime
       (getRuntime)
       (exec cmd)
-      (getInputStream)))
+      (getInputStream))
+  ;; (-> (ProcessBuilder. ["adb" "logcat" "192.168.58.101:5555"])
+  ;;     (.start)
+  ;;     (.getInputStream)
+  ;;     )
+  ;; (clojure.java.io/reader))
+  )
 
 
 (defn cmd->line-seq [cmd]
   (->> cmd
        (cmd->input-stream)
+       ((fn [x] (println cmd " " x) x))
        (java.io.InputStreamReader.)
        (java.io.BufferedReader.)
        (line-seq)))
@@ -34,19 +42,20 @@
   (-> fpath
       (java.io.FileOutputStream.)
       (java.io.OutputStreamWriter. "UTF-8")
-      (java.io.BufferedWriter.)))
+      (java.io.BufferedWriter.))
+  ;; (-> fpath
+  ;;     (clojure.java.io/writer))
+  )
 
 
 (defn async->filewriter [ch output-fpath]
   (async/go
     (with-open [writer (fpath->writer output-fpath)]
       (loop []
+        (.flush writer)
         (when-let [line (async/<! ch)]
-          (println "[wirter]" line)
           (doto writer
-            (.write line)
-            (.write "\r\n")
-            (.flush))
+            (.write (str line "\r\n")))
           (recur))))))
 
 
@@ -54,7 +63,7 @@
   (async/go
     (loop [[fst & rst] (cmd->line-seq cmd)]
       (if (nil? fst)
-        nil
+        (async/close! ch)
         (do
           (async/>! ch fst)
           (recur rst))))))
@@ -73,22 +82,29 @@
 
 
 (deftype Watcher
-    [command channel]
+    [command
+     ^:unsynchronized-mutable channel]
   IWatcher
   (run [this async->fn]
+    (when channel
+      (dispose this))
+    (set! channel (async/chan 100))
     (let [mult (async/mult channel)
-          tap-file (async/tap mult (async/chan))
-          tap-out (async/tap mult (async/chan))]
-      (async->filewriter tap-file (gen-filename))
+          tap-file (async/tap mult (async/chan 100))
+          tap-out (async/tap mult (async/chan 100))
+          filename (gen-filename)]
       (async->fn tap-out)
-      (async<-lineseq channel command)))
+      (async->filewriter tap-file filename)
+      (async<-lineseq channel command)
+      (println "running" filename)))
   (dispose [this]
-    (async/close! channel)))
+    (async/close! channel)
+    (set! channel nil)))
 
 
 (defn new-watcher []
   (let [command "adb logcat"
         device "192.168.58.101:5555"
         combined-command (str command " " device)
-        channel (async/chan)]
+        channel nil]
     (Watcher. combined-command channel)))

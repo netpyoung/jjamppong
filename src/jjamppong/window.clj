@@ -182,9 +182,11 @@
    (doto this
      (.on_btn_stop event)
      (.on_btn_clear event))
+   ;; (.setDisable btn_start true)
    (doto table_log
      (.setItems table_contents)
-     (auto-scroll))
+     ;; (auto-scroll)
+     )
    (reset! proc_adb (watcher/new-watcher))
    (watcher/run @proc_adb
      #(async->tableobservable % table_contents)))
@@ -194,8 +196,9 @@
 
   (^{:tag void} on_btn_stop [this ^javafx.event.ActionEvent event]
    (when-let [proc @proc_adb]
-     (watcher/dispose ^watcher/Watcher proc)
-     (reset! proc_adb nil))))
+     (watcher/dispose proc)
+     (reset! proc_adb nil))
+   (.setDisable btn_start false)))
 
 
 
