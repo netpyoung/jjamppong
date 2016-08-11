@@ -7,7 +7,7 @@
 
    ;; core
    [environ "1.0.3"]
-   [org.danielsz/system "0.3.0"]
+   [org.danielsz/system "0.3.1"]
    [funcool/beicon "2.2.0"]
    [org.clojure/core.async "0.2.385"]
    [named-re "1.0.0"]

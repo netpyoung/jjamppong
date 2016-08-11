@@ -1,3 +1,27 @@
 .root {
     -fx-background-color: #1d1d1d;
 }
+
+.table-row-cell:V {
+    -fx-base: brown;
+}
+
+.table-row-cell:D {
+    -fx-base: brown;
+}
+
+.table-row-cell:I {
+    -fx-base: white;
+}
+
+.table-row-cell:W {
+    -fx-base: yellow;
+}
+
+.table-row-cell:E {
+    -fx-base: red;
+}
+
+.table-row-cell:F {
+    -fx-base: brown;
+}

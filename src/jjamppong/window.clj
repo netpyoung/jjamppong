@@ -21,12 +21,16 @@
    [javafx.scene Scene]
    [javafx.collections.transformation FilteredList]
 
-   [javafx.scene.control Button Alert Alert$AlertType TableColumn TableView SelectionMode]
+   [javafx.scene.control Button Alert Alert$AlertType Cell TableColumn TableRow TableCell TableView SelectionMode]
    [javafx.scene.control.cell PropertyValueFactory MapValueFactory]
    [javafx.scene.input KeyCode KeyCodeCombination KeyCombination KeyEvent KeyCombination$Modifier
     Clipboard ClipboardContent]
    [javafx.event ActionEvent EventHandler]
    [javafx.collections FXCollections ListChangeListener]))
+
+(defonce +ONCE+ (javafx.embed.swing.JFXPanel.))
+
+
 
 
 (defn alert [title header content]
@@ -87,16 +91,17 @@
 
 
 
-    ;; brief:      XRegExp("^(?<level>[VDIWEAF])\\/(?<tag>[^)]{0,23}?)\\(\\s*(?<pid>\\d+)\\):\\s+(?<message>.*)$"),
-    ;; threadtime: XRegExp("^(?<timestamp>\\d\\d-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d\\.\\d+)\\s*(?<pid>\\d+)\\s*(?<tid>\\d+)\\s(?<level>[VDIWEAF])\\s(?<tag>.*?):\\s+(?<message>.*)$"),
-    ;; time:       XRegExp("^(?<timestamp>\\d\\d-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d\\.\\d+):*\\s(?<level>[VDIWEAF])\\/(?<tag>.*?)\\((?<pid>\\s*\\d+)\\):\\s+(?<message>.*)$"),
-    ;; process:    XRegExp("^(?<level>[VDIWEAF])\\(\\s*(?<pid>\\d+)\\)\\s+(?<message>.*)$"),
-    ;; tag:        XRegExp("^(?<level>[VDIWEAF])\\/(?<tag>[^)]{0,23}?):\\s+(?<message>.*)$"),
-    ;; thread:     XRegExp("^(?<level>[VDIWEAF])\\(\\s*(?<pid>\\d+):(?<tid>0x.*?)\\)\\s+(?<message>.*)$"),
-    ;; ddms_save:  XRegExp("^(?<timestamp>\\d\\d-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d\\.\\d+):*\\s(?<level>VERBOSE|DEBUG|ERROR|WARN|INFO|ASSERT)\\/(?<tag>.*?)\\((?<pid>\\s*\\d+)\\):\\s+(?<message>.*)$")
+;; brief:      XRegExp("^(?<level>[VDIWEAF])\\/(?<tag>[^)]{0,23}?)\\(\\s*(?<pid>\\d+)\\):\\s+(?<message>.*)$"),
+;; threadtime: XRegExp("^(?<timestamp>\\d\\d-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d\\.\\d+)\\s*(?<pid>\\d+)\\s*(?<tid>\\d+)\\s(?<level>[VDIWEAF])\\s(?<tag>.*?):\\s+(?<message>.*)$"),
+;; time:       XRegExp("^(?<timestamp>\\d\\d-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d\\.\\d+):*\\s(?<level>[VDIWEAF])\\/(?<tag>.*?)\\((?<pid>\\s*\\d+)\\):\\s+(?<message>.*)$"),
+;; process:    XRegExp("^(?<level>[VDIWEAF])\\(\\s*(?<pid>\\d+)\\)\\s+(?<message>.*)$"),
+;; tag:        XRegExp("^(?<level>[VDIWEAF])\\/(?<tag>[^)]{0,23}?):\\s+(?<message>.*)$"),
+;; thread:     XRegExp("^(?<level>[VDIWEAF])\\(\\s*(?<pid>\\d+):(?<tid>0x.*?)\\)\\s+(?<message>.*)$"),
+;; ddms_save:  XRegExp("^(?<timestamp>\\d\\d-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d\\.\\d+):*\\s(?<level>VERBOSE|DEBUG|ERROR|WARN|INFO|ASSERT)\\/(?<tag>.*?)\\((?<pid>\\s*\\d+)\\):\\s+(?<message>.*)$")
 
 (defn logline->map [log]
   ;; ref: https://github.com/mcginty/logcat-parse/blob/master/src/logcat-parse.coffee
+  ;; TODO(kep): regex is really usefull?, can you understand at first grace?
   (-> "^(?<timestamp>\\d\\d-\\d\\d\\s\\d\\d:\\d\\d:\\d\\d\\.\\d+)\\s*(?<pid>\\d+)\\s*(?<tid>\\d+)\\s(?<level>[VDIWEAF])\\s(?<tag>.*?):\\s+(?<message>.*)$"
       (re/re-pattern)
       (re/re-find log)))
@@ -133,6 +138,7 @@
              (when (pos? size)
                (.scrollTo table (- size 1)))))))))
 
+
 (defn ^java.util.function.Predicate f-to-predicate [f]
   ;; https://github.com/clojurewerkz/ogre/blob/master/src/clojure/clojurewerkz/ogre/util.clj
   "Converts a function to java.util.function.Predicate."
@@ -149,6 +155,50 @@
   (^{:tag void} on_btn_stop [^javafx.event.ActionEvent event])
   (^{:tag void} on_check_lvl [^javafx.event.ActionEvent event])
   )
+
+
+;; (defmacro callback
+;;   "Reifies the callback interface."
+;;   ;; ref: https://github.com/sonicsmooth/msclojure-junk/blob/master/tableview/src/clojure/tableview/utils.clj#L84
+;;   [args & body]
+;;   `(reify javafx.util.Callback
+;;      (~'call [this# ~@args]
+;;       ~@body)))
+
+
+
+(defn hello []
+  (let [V (javafx.css.PseudoClass/getPseudoClass "V")
+        D (javafx.css.PseudoClass/getPseudoClass "D")
+        I (javafx.css.PseudoClass/getPseudoClass "I")
+        W (javafx.css.PseudoClass/getPseudoClass "W")
+        E (javafx.css.PseudoClass/getPseudoClass "E")
+        F (javafx.css.PseudoClass/getPseudoClass "F")]
+    (reify javafx.util.Callback
+      (call [_ table]
+        (proxy [TableRow] []
+          (updateItem [item empty]
+            (proxy-super updateItem item empty)
+
+            (.pseudoClassStateChanged this V false)
+            (.pseudoClassStateChanged this D false)
+            (.pseudoClassStateChanged this I false)
+            (.pseudoClassStateChanged this W false)
+            (.pseudoClassStateChanged this E false)
+            (.pseudoClassStateChanged this F false)
+
+            (condp = (:level item)
+              "V" (.pseudoClassStateChanged this V true)
+              "D" (.pseudoClassStateChanged this D true)
+              "I" (.pseudoClassStateChanged this I true)
+              "W" (.pseudoClassStateChanged this W true)
+              "E" (.pseudoClassStateChanged this E true)
+              "F" (.pseudoClassStateChanged this F true)
+              true)))))))
+
+
+
+
 
 
 (deftype MainWindow
@@ -175,14 +225,22 @@
          (setSelectionMode SelectionMode/MULTIPLE))
      (.setOnKeyPressed evt-handler)
 
+
      (.. (getColumns)
          (addAll (->> (Log/getBasis)
                       (mapv (fn [x]
                               (doto (TableColumn. (str x))
-                                (.setCellValueFactory (MapValueFactory. (keyword x))))))))))
+                                (.setCellValueFactory (MapValueFactory. (keyword x)))))))))
+
+     )
 
 
 
+   (println (.getRowFactory table_log))
+
+
+   (.setRowFactory table_log
+                   (hello))
    ;; (.setUseSystemMenuBar menu_bar true)
    (impl/init self)
    )
@@ -198,9 +256,12 @@
 
   IMainWindowFX
   (close [this]
-    (impl/init this))
+    (impl/init this)
+    )
 
   (^{:tag void} on_btn_start [this ^javafx.event.ActionEvent event]
+
+
    (doto this
      (.on_btn_stop event)
      (.on_btn_clear event))
@@ -234,8 +295,8 @@
                             "W" (.isSelected check_lvl_w)
                             "E" (.isSelected check_lvl_e)
                             "F" (.isSelected check_lvl_f)
-                            true))))))
-   (println "on-check-lvl")))
+                            true)))))))
+  )
 
 
 
@@ -264,10 +325,10 @@
 (defrecord Window [is-dev _stage _window]
   component/Lifecycle
   (start [this]
-    (javafx.embed.swing.JFXPanel.)
     (javafx.application.Platform/setImplicitExit false)
     (javafx.application.Platform/runLater
      #(do
+
         (let [fxml (clojure.java.io/resource "layout.fxml")
               controller (gen-MainWindow)
               loader (doto (FXMLLoader. fxml)

@@ -16,6 +16,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="572.0" prefWidth="872.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -58,9 +59,9 @@
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="218.0" />
               </columnConstraints>
               <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="130.0" minHeight="1.0" prefHeight="89.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="401.0" minHeight="10.0" prefHeight="203.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="239.0" minHeight="10.0" prefHeight="239.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
                   <TableView fx:id="table_log" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true" GridPane.columnSpan="3" GridPane.rowIndex="1" GridPane.rowSpan="2" />
@@ -73,12 +74,30 @@
                   </HBox>
                   <VBox prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
                      <children>
-                        <CheckBox fx:id="check_lvl_v" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Verbose" />
-                        <CheckBox fx:id="check_lvl_d" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Debug" />
-                        <CheckBox fx:id="check_lvl_i" layoutX="10.0" layoutY="28.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Info" />
-                        <CheckBox fx:id="check_lvl_w" layoutX="10.0" layoutY="46.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Warn" />
-                        <CheckBox fx:id="check_lvl_e" layoutX="10.0" layoutY="64.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Error" />
-                        <CheckBox fx:id="check_lvl_f" layoutX="10.0" layoutY="82.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Fatal" />
+                        <CheckBox fx:id="check_lvl_v" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Verbose">
+                           <font>
+                              <Font size="10.0" />
+                           </font></CheckBox>
+                        <CheckBox fx:id="check_lvl_d" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Debug">
+                           <font>
+                              <Font size="10.0" />
+                           </font></CheckBox>
+                        <CheckBox fx:id="check_lvl_i" layoutX="10.0" layoutY="28.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Info">
+                           <font>
+                              <Font size="10.0" />
+                           </font></CheckBox>
+                        <CheckBox fx:id="check_lvl_w" layoutX="10.0" layoutY="46.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Warn">
+                           <font>
+                              <Font size="10.0" />
+                           </font></CheckBox>
+                        <CheckBox fx:id="check_lvl_e" layoutX="10.0" layoutY="64.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Error">
+                           <font>
+                              <Font size="10.0" />
+                           </font></CheckBox>
+                        <CheckBox fx:id="check_lvl_f" layoutX="10.0" layoutY="82.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Fatal">
+                           <font>
+                              <Font size="10.0" />
+                           </font></CheckBox>
                      </children>
                   </VBox>
                </children>
