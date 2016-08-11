@@ -10,7 +10,6 @@
    [clojure.string :as str]
    [clojure.core.async :as async]))
 
-
 ;; (defn cmd->reader [cmd]
 ;;   ;; (.. Runtime
 ;;   ;;     (getRuntime)
@@ -40,7 +39,6 @@
       (java.io.BufferedOutputStream.)
       (clojure.java.io/writer)))
 
-
 (defn async->filewriter [ch output-fpath]
   (async/go
     (with-open [writer (fpath->writer output-fpath)]
@@ -50,7 +48,6 @@
             (.write (str line "\r\n"))
             (.flush))
           (recur))))))
-
 
 (defn async<-lineseq [ch cmd]
   (let [pb (ProcessBuilder. cmd)
@@ -71,18 +68,16 @@
             (recur rst)))))
     proc))
 
-
 (defn gen-filename []
   (-> "yyyyMMdd_HHmmss"
       (java.text.SimpleDateFormat.)
       (.format (java.util.Date.))
       (str ".log")))
 
-
 (deftype Watcher
-    [command
-     ^:unsynchronized-mutable channel
-     ^:unsynchronized-mutable proc]
+         [command
+          ^:unsynchronized-mutable channel
+          ^:unsynchronized-mutable proc]
   impl/IWatcher
   (run [this]
     (when channel
@@ -99,7 +94,6 @@
     (.destroyForcibly proc)
     (async/close! channel)
     (set! channel nil)))
-
 
 (defn new-watcher []
   (let [command "adb"

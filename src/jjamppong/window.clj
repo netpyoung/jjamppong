@@ -30,9 +30,6 @@
 
 (defonce +ONCE+ (javafx.embed.swing.JFXPanel.))
 
-
-
-
 (defn alert [title header content]
   (let [alert (Alert. Alert$AlertType/INFORMATION)]
     (doto alert
@@ -41,24 +38,20 @@
       (.setContentText content)
       (.showAndWait))))
 
-
 (defn obslist [& items]
   (-> (into-array items)
       (FXCollections/observableArrayList)))
-
 
 (defn event-handler*
   [f]
   (reify javafx.event.EventHandler
     (handle [this e] (f e))))
 
-
 (defn get-selected-cell-strings [^TableView table]
   (let [items (.getItems table)]
     (->> (.. table getSelectionModel getSelectedIndices)
          (map #(str (.get items %)))
          (clojure.string/join "\n"))))
-
 
 (let [copyKeyCodeCompination
       (KeyCodeCombination. KeyCode/C (into-array KeyCombination$Modifier [KeyCombination/SHORTCUT_DOWN]))]
@@ -71,9 +64,8 @@
                (setContent (doto (ClipboardContent.)
                              (.putString (get-selected-cell-strings table)))))))))))
 
-
 (defrecord Log
-    [timestamp pid tid level tag message]
+           [timestamp pid tid level tag message]
   Object
   (toString [this]
     (->> this
@@ -88,7 +80,6 @@
 ;;               (re-pattern)
 ;;               (re-find log)
 ;;               (rest))))
-
 
 
 ;; brief:      XRegExp("^(?<level>[VDIWEAF])\\/(?<tag>[^)]{0,23}?)\\(\\s*(?<pid>\\d+)\\):\\s+(?<message>.*)$"),
@@ -106,12 +97,10 @@
       (re/re-pattern)
       (re/re-find log)))
 
-
 (defn logline->Log [log]
   (-> log
       (logline->map)
       (map->Log)))
-
 
 (def +GLOBAL_LOCK+ (Object.))
 
@@ -125,8 +114,6 @@
                (.add observable)))
         (recur)))))
 
-
-
 (defn auto-scroll [table]
   ;; i don't know why it isn't working
   (.. table
@@ -139,15 +126,11 @@
              (when (pos? s)
                (.scrollTo table (- s 1)))))))))
 
-
-
 (defn ^java.util.function.Predicate f-to-predicate [f]
   ;; https://github.com/clojurewerkz/ogre/blob/master/src/clojure/clojurewerkz/ogre/util.clj
   "Converts a function to java.util.function.Predicate."
   (reify java.util.function.Predicate
     (test [this arg] (f arg))))
-
-
 
 (definterface IMainWindowFX
   (close [])
@@ -155,9 +138,7 @@
   (^{:tag void} on_btn_start [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_clear [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_stop [^javafx.event.ActionEvent event])
-  (^{:tag void} on_check_lvl [^javafx.event.ActionEvent event])
-  )
-
+  (^{:tag void} on_check_lvl [^javafx.event.ActionEvent event]))
 
 ;; (defmacro callback
 ;;   "Reifies the callback interface."
@@ -166,7 +147,6 @@
 ;;   `(reify javafx.util.Callback
 ;;      (~'call [this# ~@args]
 ;;       ~@body)))
-
 
 
 (defn hello []
@@ -198,7 +178,6 @@
               "F" (.pseudoClassStateChanged this F true)
               true)))))))
 
-
 (defn init-table [table]
   (doto table
     (.setEditable true)
@@ -217,8 +196,7 @@
     ;;    (handle [this event]
     ;;      (let [dragboard (.getDragboard event)]
     ;;        (println [event dragboard])))))
-
-    ))
+))
 
 (defn register-drag-drop-event [scene]
   (doto scene
@@ -240,40 +218,33 @@
              (do
                (->> db
                     (.getFiles)
-                    (first )
+                    (first)
                     (.getAbsolutePath)
                     (println))
-               (. event (setDropCompleted true))
-               )
-             (. event (setDropCompleted false))
-             )
+               (. event (setDropCompleted true)))
+             (. event (setDropCompleted false)))
            (. event consume)))))))
 
-
 (deftype MainWindow
-    [proc_adb
-     table_contents
-     filtered
-     ^{FXML [] :unsynchronized-mutable true} btn_clear
-     ^{FXML [] :unsynchronized-mutable true} btn_start
-     ^{FXML [] :unsynchronized-mutable true} btn_stop
-     ^{FXML [] :unsynchronized-mutable true} check_lvl_v
-     ^{FXML [] :unsynchronized-mutable true} check_lvl_d
-     ^{FXML [] :unsynchronized-mutable true} check_lvl_i
-     ^{FXML [] :unsynchronized-mutable true} check_lvl_w
-     ^{FXML [] :unsynchronized-mutable true} check_lvl_e
-     ^{FXML [] :unsynchronized-mutable true} check_lvl_f
-     ^{FXML [] :unsynchronized-mutable true} table_log]
+         [proc_adb
+          table_contents
+          filtered
+          ^{FXML [] :unsynchronized-mutable true} btn_clear
+          ^{FXML [] :unsynchronized-mutable true} btn_start
+          ^{FXML [] :unsynchronized-mutable true} btn_stop
+          ^{FXML [] :unsynchronized-mutable true} check_lvl_v
+          ^{FXML [] :unsynchronized-mutable true} check_lvl_d
+          ^{FXML [] :unsynchronized-mutable true} check_lvl_i
+          ^{FXML [] :unsynchronized-mutable true} check_lvl_w
+          ^{FXML [] :unsynchronized-mutable true} check_lvl_e
+          ^{FXML [] :unsynchronized-mutable true} check_lvl_f
+          ^{FXML [] :unsynchronized-mutable true} table_log]
 
   javafx.fxml.Initializable
   (^{:tag void}
-   initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
-   (init-table table_log)
-
-
-   ;; (.setUseSystemMenuBar menu_bar true)
-   (impl/init self)
-   )
+    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
+    (init-table table_log);; (.setUseSystemMenuBar menu_bar true)
+    (impl/init self))
 
   impl/IMainWindow
   (init [this]
@@ -286,50 +257,41 @@
 
   IMainWindowFX
   (close [this]
-    (impl/init this)
-    )
+    (impl/init this))
 
-  (^{:tag void} on_btn_start [this ^javafx.event.ActionEvent event]
-
-
-   (doto this
-     (.on_btn_stop event)
-     (.on_btn_clear event))
-   (.setDisable btn_clear false)
-   (.setDisable btn_start true)
-   (.setDisable btn_stop false)
-   (doto table_log
-     (.setItems filtered)
-     (auto-scroll)
-     )
-   (reset! proc_adb (watcher/new-watcher))
-   (let [ch (impl/run @proc_adb)]
-     (async->tableobservable ch table_contents)))
+  (^{:tag void} on_btn_start [this ^javafx.event.ActionEvent event] (doto this
+                                                                      (.on_btn_stop event)
+                                                                      (.on_btn_clear event))
+    (.setDisable btn_clear false)
+    (.setDisable btn_start true)
+    (.setDisable btn_stop false)
+    (doto table_log
+      (.setItems filtered)
+      (auto-scroll))
+    (reset! proc_adb (watcher/new-watcher))
+    (let [ch (impl/run @proc_adb)]
+      (async->tableobservable ch table_contents)))
 
   (^{:tag void} on_btn_clear [this ^javafx.event.ActionEvent event]
-   (.clear table_contents))
+    (.clear table_contents))
 
   (^{:tag void} on_btn_stop [this ^javafx.event.ActionEvent event]
-   (impl/init this))
+    (impl/init this))
 
   (^{:tag void} on_check_lvl [this ^javafx.event.ActionEvent event]
-   (locking +GLOBAL_LOCK+
-     (.setPredicate
-      filtered
-      (f-to-predicate (fn [p]
-                        (let [level (:level p)]
-                          (condp = level
-                            "V" (.isSelected check_lvl_v)
-                            "D" (.isSelected check_lvl_d)
-                            "I" (.isSelected check_lvl_i)
-                            "W" (.isSelected check_lvl_w)
-                            "E" (.isSelected check_lvl_e)
-                            "F" (.isSelected check_lvl_f)
-                            true)))))))
-  )
-
-
-
+    (locking +GLOBAL_LOCK+
+      (.setPredicate
+       filtered
+       (f-to-predicate (fn [p]
+                         (let [level (:level p)]
+                           (condp = level
+                             "V" (.isSelected check_lvl_v)
+                             "D" (.isSelected check_lvl_d)
+                             "I" (.isSelected check_lvl_i)
+                             "W" (.isSelected check_lvl_w)
+                             "E" (.isSelected check_lvl_e)
+                             "F" (.isSelected check_lvl_f)
+                             true))))))))
 
 (defn gen-MainWindow []
   (let [observable (FXCollections/observableArrayList [])
@@ -349,8 +311,7 @@
      nil                                    ;check_lvl_e
      nil                                    ;check_lvl_f
      nil                                    ;table_log
-     )))
-
+)))
 
 (defrecord Window [is-dev _stage _window]
   component/Lifecycle
@@ -387,12 +348,10 @@
         (.close @_stage)))
     this))
 
-
 (defn dev-new-window []
   (map->Window {:is-dev true
                 :_stage (atom nil)
                 :_window (atom nil)}))
-
 
 (defn prod-new-window []
   (map->Window {:is-dev false

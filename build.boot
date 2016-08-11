@@ -15,7 +15,7 @@
 
    ;; boot
    [tolitius/boot-check "0.1.3" :scope "test"]
-   [cljfmt "0.5.3"]
+   [cljfmt "0.5.3" :scope "test"]
    [boot-environ "1.0.3" :scope "test"]
    [adzerk/bootlaces "0.1.13" :scope "test"]])
 
