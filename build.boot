@@ -14,11 +14,17 @@
    [nio "1.0.3"]
 
    ;; boot
+   [tolitius/boot-check "0.1.3" :scope "test"]
+   [cljfmt "0.5.3"]
    [boot-environ "1.0.3" :scope "test"]
    [adzerk/bootlaces "0.1.13" :scope "test"]])
 
 
 (require
+ '[tolitius.boot-check :as check]
+ '[cljfmt.core :as fmt]
+ '[clojure.java.io :as io]
+
  '[environ.boot :refer [environ]]
  '[adzerk.bootlaces :refer :all]
  '[system.boot :refer [system]]
@@ -27,6 +33,32 @@
 
 (def +version+ "0.0.1-SNAPSHOT")
 (bootlaces! +version+)
+
+
+;; ref: https://gist.github.com/bartojs/83a096ecb1221885ddd1
+
+(defn fmt-file [f]
+  (println "formatting" (.getName f))
+  (spit f (fmt/reformat-string (slurp f))))
+
+(defn clj-file? [f]
+  (and (.exists f) (.isFile f) (not (.isHidden f))
+       (contains? #{"clj" "cljs" "cljc" "cljx" "boot"}
+                  (last (.split (.toLowerCase (.getName f)) "\\.")))))
+
+(deftask fmt [f files VAL str "file(s) to format"]
+  (let [f (io/file files)]
+    (when (.exists f)
+      (doall (map fmt-file (filter clj-file? (if (.isDirectory f) (file-seq f) [f])))))))
+
+
+
+(deftask check []
+  (comp
+   (check/with-yagni)
+   (check/with-eastwood)
+   (check/with-kibit)
+   (check/with-bikeshed)))
 
 
 (deftask dev

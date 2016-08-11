@@ -27,7 +27,7 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 
 ## TODO
 - [ ] open log
-- [ ] filter, save/load
+- [ ] filter, save/load - right click support
 - [ ] source open if unity log
 - [ ] event, kernel log
 - [ ] excutable

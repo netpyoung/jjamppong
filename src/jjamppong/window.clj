@@ -126,6 +126,7 @@
         (recur)))))
 
 
+
 (defn auto-scroll [table]
   ;; i don't know why it isn't working
   (.. table
@@ -134,9 +135,10 @@
        (reify ListChangeListener
          (onChanged [this change]
            (.next change)
-           (let [size (.. table getItems size)]
-             (when (pos? size)
-               (.scrollTo table (- size 1)))))))))
+           (let [s (.. table getItems size)]
+             (when (pos? s)
+               (.scrollTo table (- s 1)))))))))
+
 
 
 (defn ^java.util.function.Predicate f-to-predicate [f]
@@ -197,8 +199,55 @@
               true)))))))
 
 
+(defn init-table [table]
+  (doto table
+    (.setEditable true)
+    (.. (getSelectionModel)
+        (setSelectionMode SelectionMode/MULTIPLE))
+    (.. (getColumns)
+        (addAll
+         (->> (Log/getBasis)
+              (mapv (fn [x]
+                      (doto (TableColumn. (str x))
+                        (.setCellValueFactory (MapValueFactory. (keyword x)))))))))
+    (.setOnKeyPressed evt-handler)
+    (.setRowFactory (hello))
+    ;; (.setOnDragDropped
+    ;;  (reify javafx.event.EventHandler
+    ;;    (handle [this event]
+    ;;      (let [dragboard (.getDragboard event)]
+    ;;        (println [event dragboard])))))
 
+    ))
 
+(defn register-drag-drop-event [scene]
+  (doto scene
+    (.setOnDragOver
+     (reify javafx.event.EventHandler
+       (handle [this event]
+         (let [db (.getDragboard event)]
+           (if (.hasFiles db)
+             (doto event
+               (.acceptTransferModes
+                (into-array [javafx.scene.input.TransferMode/COPY]))
+               (.consume)))))))
+
+    (.setOnDragDropped
+     (reify javafx.event.EventHandler
+       (handle [this event]
+         (let [db (.getDragboard event)]
+           (if (. db hasFiles)
+             (do
+               (->> db
+                    (.getFiles)
+                    (first )
+                    (.getAbsolutePath)
+                    (println))
+               (. event (setDropCompleted true))
+               )
+             (. event (setDropCompleted false))
+             )
+           (. event consume)))))))
 
 
 (deftype MainWindow
@@ -219,28 +268,9 @@
   javafx.fxml.Initializable
   (^{:tag void}
    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
-   (doto table_log
-     (.setEditable true)
-     (.. (getSelectionModel)
-         (setSelectionMode SelectionMode/MULTIPLE))
-     (.setOnKeyPressed evt-handler)
+   (init-table table_log)
 
 
-     (.. (getColumns)
-         (addAll (->> (Log/getBasis)
-                      (mapv (fn [x]
-                              (doto (TableColumn. (str x))
-                                (.setCellValueFactory (MapValueFactory. (keyword x)))))))))
-
-     )
-
-
-
-   (println (.getRowFactory table_log))
-
-
-   (.setRowFactory table_log
-                   (hello))
    ;; (.setUseSystemMenuBar menu_bar true)
    (impl/init self)
    )
@@ -270,7 +300,7 @@
    (.setDisable btn_stop false)
    (doto table_log
      (.setItems filtered)
-     ;; (auto-scroll)
+     (auto-scroll)
      )
    (reset! proc_adb (watcher/new-watcher))
    (let [ch (impl/run @proc_adb)]
@@ -344,6 +374,8 @@
                          (handle [^ActionEvent event]
                            (when-not is-dev
                              (System/exit 0))))))]
+
+          (register-drag-drop-event scene)
           (reset! _window controller)
           (reset! _stage stage))))
     this)
