@@ -1,4 +1,5 @@
-(ns jjamppong.protocols)
+(ns jjamppong.protocols
+  (:refer-clojure :exclude [load]))
 
 (defprotocol IWatcher
   (run [this])

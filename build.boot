@@ -11,12 +11,12 @@
    [funcool/beicon "2.2.0"]
    [org.clojure/core.async "0.2.385"]
    [named-re "1.0.0"]
-   [nio "1.0.3"]
 
    ;; boot
    [tolitius/boot-check "0.1.3" :scope "test"]
    [cljfmt "0.5.3" :scope "test"]
    [boot-environ "1.0.3" :scope "test"]
+   [adzerk/boot-jar2bin "1.1.0" :scope "test"]
    [adzerk/bootlaces "0.1.13" :scope "test"]])
 
 
@@ -28,7 +28,8 @@
  '[environ.boot :refer [environ]]
  '[adzerk.bootlaces :refer :all]
  '[system.boot :refer [system]]
- '[jjamppong.systems :refer [dev-system]])
+ '[jjamppong.systems :refer [dev-system]]
+ '[adzerk.boot-jar2bin :refer [bin exe]])
 
 
 (def +version+ "0.0.1-SNAPSHOT")
@@ -82,4 +83,6 @@
         :description "jjamppong")
    (uber)
    (jar :main 'jjamppong.core)
-   (target)))
+   (target)
+   ;; (bin :output-dir "bin")
+   ))

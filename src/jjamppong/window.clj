@@ -327,7 +327,6 @@
     (javafx.application.Platform/setImplicitExit false)
     (javafx.application.Platform/runLater
      #(do
-
         (let [fxml (clojure.java.io/resource "layout.fxml")
               controller (gen-MainWindow)
               loader (doto (FXMLLoader. fxml)
