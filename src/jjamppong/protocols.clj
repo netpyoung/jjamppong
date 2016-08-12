@@ -5,4 +5,5 @@
   (stop [this]))
 
 (defprotocol IMainWindow
-  (init [this]))
+  (init [this])
+  (load [this fpath]))

@@ -178,7 +178,7 @@
               "F" (.pseudoClassStateChanged this F true)
               true)))))))
 
-(defn init-table [table]
+(defn init-table [table items]
   (doto table
     (.setEditable true)
     (.. (getSelectionModel)
@@ -191,14 +191,10 @@
                         (.setCellValueFactory (MapValueFactory. (keyword x)))))))))
     (.setOnKeyPressed evt-handler)
     (.setRowFactory (hello))
-    ;; (.setOnDragDropped
-    ;;  (reify javafx.event.EventHandler
-    ;;    (handle [this event]
-    ;;      (let [dragboard (.getDragboard event)]
-    ;;        (println [event dragboard])))))
-))
+    ;; (auto-scroll))
+    (.setItems items)))
 
-(defn register-drag-drop-event [scene]
+(defn register-drag-drop-event [scene controller]
   (doto scene
     (.setOnDragOver
      (reify javafx.event.EventHandler
@@ -220,10 +216,20 @@
                     (.getFiles)
                     (first)
                     (.getAbsolutePath)
-                    (println))
+                    (impl/load controller))
                (. event (setDropCompleted true)))
              (. event (setDropCompleted false)))
            (. event consume)))))))
+
+
+(defn ffff [fpath observable]
+  (locking +GLOBAL_LOCK+
+    (.clear observable)
+    (with-open [rdr (clojure.java.io/reader fpath)]
+      (doseq [line (line-seq rdr)]
+        (->> line
+             (logline->Log)
+             (.add observable))))))
 
 (deftype MainWindow
          [proc_adb
@@ -243,7 +249,8 @@
   javafx.fxml.Initializable
   (^{:tag void}
     initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
-    (init-table table_log);; (.setUseSystemMenuBar menu_bar true)
+    (init-table table_log filtered)
+   ;; (.setUseSystemMenuBar menu_bar true)
     (impl/init self))
 
   impl/IMainWindow
@@ -255,6 +262,10 @@
     (.setDisable btn_start false)
     (.setDisable btn_stop true))
 
+  (load [this fpath]
+    (impl/init this)
+    (ffff fpath table_contents))
+
   IMainWindowFX
   (close [this]
     (impl/init this))
@@ -265,12 +276,9 @@
     (.setDisable btn_clear false)
     (.setDisable btn_start true)
     (.setDisable btn_stop false)
-    (doto table_log
-      (.setItems filtered)
-      (auto-scroll))
     (reset! proc_adb (watcher/new-watcher))
-    (let [ch (impl/run @proc_adb)]
-      (async->tableobservable ch table_contents)))
+    (-> (impl/run @proc_adb)
+        (async->tableobservable table_contents)))
 
   (^{:tag void} on_btn_clear [this ^javafx.event.ActionEvent event]
     (.clear table_contents))
@@ -336,7 +344,7 @@
                            (when-not is-dev
                              (System/exit 0))))))]
 
-          (register-drag-drop-event scene)
+          (register-drag-drop-event scene controller)
           (reset! _window controller)
           (reset! _stage stage))))
     this)
