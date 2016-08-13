@@ -11,6 +11,8 @@
    [funcool/beicon "2.2.0"]
    [org.clojure/core.async "0.2.385"]
    [named-re "1.0.0"]
+   [org.controlsfx/controlsfx "8.40.11"]
+
 
    ;; boot
    [tolitius/boot-check "0.1.3" :scope "test"]

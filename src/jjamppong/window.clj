@@ -192,7 +192,7 @@
                         (.setCellValueFactory (MapValueFactory. (keyword x)))))))))
     (.setOnKeyPressed evt-handler)
     (.setRowFactory (hello))
-    (auto-scroll))
+    (auto-scroll)
     (.setItems items)))
 
 (defn register-drag-drop-event [scene controller]
