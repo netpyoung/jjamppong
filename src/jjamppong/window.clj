@@ -124,7 +124,8 @@
            (.next change)
            (let [s (.. table getItems size)]
              (when (pos? s)
-               (.scrollTo table (- s 1)))))))))
+               (.scrollTo table (- s 1))
+               (.requestFocus table))))))))
 
 (defn ^java.util.function.Predicate f-to-predicate [f]
   ;; https://github.com/clojurewerkz/ogre/blob/master/src/clojure/clojurewerkz/ogre/util.clj
@@ -191,7 +192,7 @@
                         (.setCellValueFactory (MapValueFactory. (keyword x)))))))))
     (.setOnKeyPressed evt-handler)
     (.setRowFactory (hello))
-    ;; (auto-scroll))
+    (auto-scroll))
     (.setItems items)))
 
 (defn register-drag-drop-event [scene controller]

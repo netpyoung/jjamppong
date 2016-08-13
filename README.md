@@ -26,8 +26,20 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 
 
 ## TODO
-- [ ] open log
-- [ ] filter, save/load - right click support
+- [x] open log
+- [ ] device list
+- [ ] install/remove app
+- [ ] highlight
+- [ ] filter
+    - [ ] message contain/remove (optional regex)
+    - [ ] tag, pid, tid
+    - [ ] easy add/remove/enable/disable
+- [ ] data view
+    - [ ] xml, json
+    - [ ] url encode/decode
+- [ ] rest test
+- [ ] pipeline
+- [ ] config save/load - right click support
 - [ ] source open if unity log
 - [ ] event, kernel log
 - [ ] excutable
