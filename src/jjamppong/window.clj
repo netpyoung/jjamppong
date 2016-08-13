@@ -17,7 +17,7 @@
    ;; javafx
    [javafx.beans.property SimpleStringProperty]
    [javafx.fxml FXMLLoader FXML]
-   [javafx.stage Stage StageBuilder]
+   [javafx.stage Stage StageBuilder Modality]
    [javafx.scene Scene]
    [javafx.collections.transformation FilteredList]
 
@@ -232,6 +232,22 @@
              (logline->Log)
              (.add observable))))))
 
+(defn test-popup [window]
+  (let [fxml (clojure.java.io/resource "dialog.fxml")
+        ;; controller (gen-MainWindow)
+        ;; loader (doto (FXMLLoader. fxml)
+        ;;          (.setController controller))
+        loader (FXMLLoader. fxml)
+        scene (Scene. (.load loader))
+        stage (doto (.build (StageBuilder/create))
+                (.setScene scene)
+                (.setTitle "jjamppong")
+                (.initModality Modality/APPLICATION_MODAL)
+                (.initOwner window)
+                (.showAndWait))]
+    )
+  )
+
 (deftype MainWindow
          [proc_adb
           table_contents
@@ -261,7 +277,8 @@
       (reset! proc_adb nil))
     (.setDisable btn_clear true)
     (.setDisable btn_start false)
-    (.setDisable btn_stop true))
+    ;; (.setDisable btn_stop true)
+)
 
   (load [this fpath]
     (impl/init this)
@@ -271,21 +288,24 @@
   (close [this]
     (impl/init this))
 
-  (^{:tag void} on_btn_start [this ^javafx.event.ActionEvent event] (doto this
-                                                                      (.on_btn_stop event)
-                                                                      (.on_btn_clear event))
-    (.setDisable btn_clear false)
-    (.setDisable btn_start true)
-    (.setDisable btn_stop false)
-    (reset! proc_adb (watcher/new-watcher))
-    (-> (impl/run @proc_adb)
-        (async->tableobservable table_contents)))
+  (^{:tag void} on_btn_start [this ^javafx.event.ActionEvent event]
+   (doto this
+     (.on_btn_stop event)
+     (.on_btn_clear event))
+   (.setDisable btn_clear false)
+   (.setDisable btn_start true)
+   (.setDisable btn_stop false)
+   (reset! proc_adb (watcher/new-watcher))
+   (-> (impl/run @proc_adb)
+       (async->tableobservable table_contents)))
 
   (^{:tag void} on_btn_clear [this ^javafx.event.ActionEvent event]
     (.clear table_contents))
 
   (^{:tag void} on_btn_stop [this ^javafx.event.ActionEvent event]
-    (impl/init this))
+    ;; (impl/init this)
+   (test-popup (.getWindow (.getScene (.getSource event))))
+)
 
   (^{:tag void} on_check_lvl [this ^javafx.event.ActionEvent event]
     (locking +GLOBAL_LOCK+
