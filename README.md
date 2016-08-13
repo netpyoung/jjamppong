@@ -26,7 +26,7 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 
 
 ## TODO
-- [x] open log
+- [ ] open log async
 - [ ] device list
 - [ ] install/remove app
 - [ ] highlight
@@ -44,9 +44,11 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 - [ ] event, kernel log
 - [ ] excutable
 - [ ] bookmark
+- [ ] notify
 - [ ] maybe
    - [ ] plugin
    - [ ] diff
+   - [ ] dark theme
 
 [iookill/LogFilter]: https://github.com/iookill/LogFilter
 [Clojure]: https://clojure.org/
