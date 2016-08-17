@@ -30,6 +30,7 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 - [ ] device list
 - [ ] install/remove app
 - [ ] highlight
+- [ ] error hightligh - https://github.com/frosch95/SmartCSV.fx/blob/master/src/main/java/ninja/javafx/smartcsv/fx/list/ErrorSideBar.java
 - [ ] filter
     - [ ] message contain/remove (optional regex)
     - [ ] tag, pid, tid
@@ -50,6 +51,11 @@ When i was testing android app via `adb logcat`, It's not enough for me.
    - [ ] diff
    - [ ] dark theme
 
+
+## styling
+* http://fxexperience.com/controlsfx/
+* https://github.com/jfoenixadmin/JFoenix
+* https://github.com/RobertBColton/DockFX - lgpl3
 [iookill/LogFilter]: https://github.com/iookill/LogFilter
 [Clojure]: https://clojure.org/
 [JavaFX]: http://docs.oracle.com/javafx/

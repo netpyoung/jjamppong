@@ -7,6 +7,7 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -14,10 +15,11 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<?import org.controlsfx.control.ToggleSwitch?>
+<?import org.controlsfx.control.StatusBar?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="572.0" prefWidth="872.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -53,61 +55,91 @@
             </MenuBar>
          </top>
          <center>
-            <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" BorderPane.alignment="CENTER">
+            <GridPane BorderPane.alignment="CENTER">
               <columnConstraints>
-                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="264.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="194.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="218.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
               </columnConstraints>
               <rowConstraints>
-                <RowConstraints maxHeight="130.0" minHeight="1.0" prefHeight="89.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="401.0" minHeight="10.0" prefHeight="203.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="239.0" minHeight="10.0" prefHeight="239.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="267.0" minHeight="10.0" prefHeight="99.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="463.0" minHeight="10.0" prefHeight="443.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-                  <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="2">
+                  <HBox prefHeight="100.0" prefWidth="200.0">
                      <children>
-                        <Button fx:id="btn_clear" mnemonicParsing="false" onAction="#on_btn_clear" text="clear" />
-                        <Button fx:id="btn_start" mnemonicParsing="false" onAction="#on_btn_start" text="start" />
-                        <Button fx:id="btn_stop" mnemonicParsing="false" onAction="#on_btn_stop" text="stop" />
+                        <HBox prefHeight="100.0" prefWidth="200.0">
+                           <children>
+                              <Button fx:id="btn_clear" mnemonicParsing="false" onAction="#on_btn_clear" text="clear" />
+                              <Button fx:id="btn_start" mnemonicParsing="false" onAction="#on_btn_start" text="start" />
+                              <Button fx:id="btn_stop" mnemonicParsing="false" onAction="#on_btn_stop" text="stop" />
+                           </children>
+                        </HBox>
+                        <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+                           <children>
+                              <CheckBox fx:id="check_lvl_v" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Verbose">
+                                 <font>
+                                    <Font size="10.0" />
+                                 </font>
+                              </CheckBox>
+                              <CheckBox fx:id="check_lvl_d" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Debug">
+                                 <font>
+                                    <Font size="10.0" />
+                                 </font>
+                              </CheckBox>
+                              <CheckBox fx:id="check_lvl_i" layoutX="10.0" layoutY="28.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Info">
+                                 <font>
+                                    <Font size="10.0" />
+                                 </font>
+                              </CheckBox>
+                              <CheckBox fx:id="check_lvl_w" layoutX="10.0" layoutY="46.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Warn">
+                                 <font>
+                                    <Font size="10.0" />
+                                 </font>
+                              </CheckBox>
+                              <CheckBox fx:id="check_lvl_e" layoutX="10.0" layoutY="64.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Error">
+                                 <font>
+                                    <Font size="10.0" />
+                                 </font>
+                              </CheckBox>
+                              <CheckBox fx:id="check_lvl_f" layoutX="10.0" layoutY="82.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Fatal">
+                                 <font>
+                                    <Font size="10.0" />
+                                 </font>
+                              </CheckBox>
+                           </children>
+                        </VBox>
                      </children>
                   </HBox>
-                  <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1">
-                     <children>
-                        <CheckBox fx:id="check_lvl_v" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Verbose">
-                           <font>
-                              <Font size="10.0" />
-                           </font></CheckBox>
-                        <CheckBox fx:id="check_lvl_d" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Debug">
-                           <font>
-                              <Font size="10.0" />
-                           </font></CheckBox>
-                        <CheckBox fx:id="check_lvl_i" layoutX="10.0" layoutY="28.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Info">
-                           <font>
-                              <Font size="10.0" />
-                           </font></CheckBox>
-                        <CheckBox fx:id="check_lvl_w" layoutX="10.0" layoutY="46.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Warn">
-                           <font>
-                              <Font size="10.0" />
-                           </font></CheckBox>
-                        <CheckBox fx:id="check_lvl_e" layoutX="10.0" layoutY="64.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Error">
-                           <font>
-                              <Font size="10.0" />
-                           </font></CheckBox>
-                        <CheckBox fx:id="check_lvl_f" layoutX="10.0" layoutY="82.0" mnemonicParsing="false" onAction="#on_check_lvl" selected="true" text="Fatal">
-                           <font>
-                              <Font size="10.0" />
-                           </font></CheckBox>
-                     </children>
-                  </VBox>
-                  <TableView fx:id="table_log" editable="true" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tableMenuButtonVisible="true" GridPane.columnSpan="3" GridPane.rowIndex="1" GridPane.rowSpan="2" />
-                  <ToggleSwitch />
+                  <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+                     <center>
+                        <TableView fx:id="table_log" editable="true" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tableMenuButtonVisible="true" BorderPane.alignment="CENTER" />
+                     </center>
+                     <right>
+                        <Region maxWidth="-Infinity" minWidth="40.0" prefWidth="40.0" style="-fx-background-color: #FF00FF;" BorderPane.alignment="CENTER" />
+                     </right>
+                     <top>
+                        <TextField BorderPane.alignment="CENTER" />
+                     </top>
+                  </BorderPane>
                </children>
             </GridPane>
          </center>
          <left>
-            <TreeView editable="true" prefHeight="200.0" prefWidth="200.0" showRoot="false" BorderPane.alignment="CENTER" />
+            <GridPane BorderPane.alignment="CENTER">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints maxHeight="267.0" minHeight="10.0" prefHeight="75.0" vgrow="SOMETIMES" />
+                <RowConstraints maxHeight="467.0" minHeight="10.0" prefHeight="467.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <TreeView editable="true" prefHeight="200.0" prefWidth="200.0" showRoot="false" GridPane.rowIndex="1" />
+               </children>
+            </GridPane>
          </left>
+         <bottom>
+            <StatusBar BorderPane.alignment="CENTER" />
+         </bottom>
       </BorderPane>
    </children>
 </AnchorPane>
