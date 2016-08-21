@@ -98,9 +98,10 @@
       (re/re-find log)))
 
 (defn logline->Log [log]
-  (-> log
-      (logline->map)
-      (map->Log)))
+  (let [m (logline->map log)]
+    (if m
+      (map->Log m)
+      (map->Log {:message log}))))
 
 (def +GLOBAL_LOCK+ (Object.))
 
@@ -114,6 +115,7 @@
                (.add observable)))
         (recur)))))
 
+
 (defn auto-scroll [table]
   ;; i don't know why it isn't working
   (.. table
@@ -124,8 +126,19 @@
            (.next change)
            (let [s (.. table getItems size)]
              (when (pos? s)
-               (.scrollTo table (- s 1))
-               (.requestFocus table))))))))
+               (javafx.application.Platform/runLater
+                #(do
+
+                   (let [itm (first (.getAddedSubList change))]
+                     (when (instance? Log itm)
+                       ;; (.scrollTo table itm)
+                       (.scrollTo table (.. table getItems (get (- s 1))))
+                       )
+                     ;; (.scrollTo table ^Int (- s 1)
+                     )))
+               )))))
+      )
+  )
 
 (defn ^java.util.function.Predicate f-to-predicate [f]
   ;; https://github.com/clojurewerkz/ogre/blob/master/src/clojure/clojurewerkz/ogre/util.clj
@@ -181,7 +194,7 @@
 
 (defn init-table [table items]
   (doto table
-    (.setEditable true)
+    (.setEditable false)
     (.. (getSelectionModel)
         (setSelectionMode SelectionMode/MULTIPLE))
     (.. (getColumns)
@@ -192,8 +205,10 @@
                         (.setCellValueFactory (MapValueFactory. (keyword x)))))))))
     (.setOnKeyPressed evt-handler)
     (.setRowFactory (hello))
+
+    (.setItems items)
     (auto-scroll)
-    (.setItems items)))
+    ))
 
 (defn register-drag-drop-event [scene controller]
   (doto scene
@@ -248,6 +263,7 @@
     )
   )
 
+
 (deftype MainWindow
          [proc_adb
           table_contents
@@ -284,6 +300,9 @@
     (impl/init this)
     (ffff fpath table_contents))
 
+  (get-table [this]
+    table_log)
+
   IMainWindowFX
   (close [this]
     (impl/init this))
@@ -303,9 +322,9 @@
     (.clear table_contents))
 
   (^{:tag void} on_btn_stop [this ^javafx.event.ActionEvent event]
-    ;; (impl/init this)
-   (test-popup (.getWindow (.getScene (.getSource event))))
-)
+   (impl/init this)
+   ;; (test-popup (.getWindow (.getScene (.getSource event))))
+   )
 
   (^{:tag void} on_check_lvl [this ^javafx.event.ActionEvent event]
     (locking +GLOBAL_LOCK+
@@ -385,3 +404,16 @@
   (map->Window {:is-dev false
                 :_stage (atom nil)
                 :_window (atom nil)}))
+
+
+(defn scroll [^Integer x]
+  (let [table ^TableView (.get-table @(:_window (:window system)))]
+    (javafx.application.Platform/runLater
+     #(do
+        (.. table requestFocus)
+        (.. table getFocusModel (focus x))
+        (.. table getSelectionModel (select x))
+        (.. table (scrollTo x))))))
+
+(defn find-table []
+  (.get-table @(:_window (:window system))))

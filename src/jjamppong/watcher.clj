@@ -1,6 +1,8 @@
 (ns jjamppong.watcher
-  (:import [java.lang ProcessBuilder]
-           [java.nio.file Files Paths OpenOption StandardOpenOption])
+  (:import
+   [java.lang ProcessBuilder]
+   [java.nio.file FileSystems]
+   [java.nio.file Files Paths OpenOption StandardOpenOption])
   (:require
    [jjamppong.protocols :as impl]
    [system.repl :refer [system]]
@@ -27,11 +29,9 @@
 ;;        (map #(str/replace % #"\tdevice" ""))
 ;;        (map #(str/replace % #"\toffline" ""))))
 
-
 (defn fpath->writer [fpath]
-  (-> (str "file:///Users/pyoung/temp/jjamppong/" fpath)
-      (java.net.URI.)
-      (Paths/get)
+  (-> (FileSystems/getDefault)
+      (.getPath fpath (make-array String 0))
       (Files/newOutputStream
        (into-array OpenOption
                    [StandardOpenOption/CREATE StandardOpenOption/APPEND]))

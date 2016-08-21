@@ -7,4 +7,5 @@
 
 (defprotocol IMainWindow
   (init [this])
+  (get-table [this])
   (load [this fpath]))
