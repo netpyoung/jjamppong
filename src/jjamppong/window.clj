@@ -15,7 +15,9 @@
    [java.util ResourceBundle]
 
    ;; javafx
+   [java.awt.event.InputMethodEvent]
    [javafx.beans.property SimpleStringProperty]
+   [javafx.beans.value ObservableValue]
    [javafx.fxml FXMLLoader FXML]
    [javafx.stage Stage StageBuilder Modality]
    [javafx.scene Scene]
@@ -146,7 +148,13 @@
   (^{:tag void} on_btn_start [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_clear [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_stop [^javafx.event.ActionEvent event])
-  (^{:tag void} on_check_lvl [^javafx.event.ActionEvent event]))
+  (^{:tag void} on_check_lvl [^javafx.event.ActionEvent event])
+  ;; (^{:tag void} on_txt_filter_changed [^javafx.beans.value.ObservableValue observable, ^Object oldValue, ^Object newValue])
+  ;; (^{:tag void} on_txt_filter_changed [^java.awt.event.InputMethodEvent event])
+
+  (^{:tag void} on_txt_filter_changed [^javafx.scene.input.KeyEvent event])
+
+  )
 
 ;; (defmacro callback
 ;;   "Reifies the callback interface."
@@ -155,7 +163,6 @@
 ;;   `(reify javafx.util.Callback
 ;;      (~'call [this# ~@args]
 ;;       ~@body)))
-
 
 (defn hello []
   (let [V (javafx.css.PseudoClass/getPseudoClass "V")
@@ -302,16 +309,17 @@
     table_log)
 
   (update-predicate [this filter-list]
-    (.setPredicate
-     filter-list
-     (f-to-predicate (fn [p]
-                       (let [level (:level p)]
-                         (if (get (:tags @filter-atom) level)
-                           true
-                           false
-                           )
-                         )
-                       ))))
+    (locking +GLOBAL_LOCK+
+
+      (.setPredicate
+       filter-list
+       (f-to-predicate (fn [p]
+                         (let [level (:level p)
+                               message (:message p)]
+                           (if (and (get (:tags @filter-atom) level)
+                                    (re-find (re-pattern (:filter-text @filter-atom)) message))
+                             true
+                             false)))))))
 
   IMainWindowFX
   (close [this]
@@ -351,9 +359,14 @@
        (if (.isSelected event-source)
          (swap! filter-atom update-in [:tags] conj tag)
          (swap! filter-atom update-in [:tags] disj tag))))
-   (impl/update-predicate this filtered)))
+   (impl/update-predicate this filtered))
 
+  (^{:tag void} on_txt_filter_changed [this ^javafx.scene.input.KeyEvent event]
 
+   (swap! filter-atom assoc :filter-text  (.getText (.getSource event)))
+   (impl/update-predicate this filtered)
+   )
+)
 
 (defn gen-MainWindow []
   (let [observable (FXCollections/observableArrayList [])
