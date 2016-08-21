@@ -8,6 +8,7 @@
    [clojure.reflect :as r]
    [clojure.string :as str]
    [named-re.re :as re]
+   [clojure.java.shell]
    [clojure.core.async :as async])
 
   (:import
