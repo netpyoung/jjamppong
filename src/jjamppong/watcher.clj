@@ -11,24 +11,13 @@
    [clojure.string :as str]
    [clojure.core.async :as async]))
 
-;; (defn cmd->reader [cmd]
-;;   ;; (.. Runtime
-;;   ;;     (getRuntime)
-;;   ;;     (exec cmd)
-;;   ;;     (getInputStream))
-;;   (-> (ProcessBuilder. ["adb" "logcat" "192.168.58.101:5555"])
-;;       (.start)
-;;       (.getInputStream)
-;;       (clojure.java.io/reader)))
-
-
-
 (defn fpath->writer [fpath]
   (-> (FileSystems/getDefault)
       (.getPath fpath (make-array String 0))
       (Files/newOutputStream
-       (into-array OpenOption
-                   [StandardOpenOption/CREATE StandardOpenOption/APPEND]))
+       (into-array
+        OpenOption
+        [StandardOpenOption/CREATE StandardOpenOption/APPEND]))
       (java.io.BufferedOutputStream.)
       (clojure.java.io/writer)))
 
@@ -53,6 +42,7 @@
       (loop [[fst & rst] (line-seq reader)]
         (if (nil? fst)
           (do
+            ;; NOTE(kep): i don't know, is this really need?
             (.close in)
             (.close out)
             (.close err))
@@ -75,11 +65,10 @@
   (run [this]
     (when channel
       (impl/stop this))
-    (set! channel (async/chan 100))
-
+    (set! channel (async/chan))
     (let [mult (async/mult channel)
-          tap-file (async/tap mult (async/chan 200))
-          tap-out (async/tap mult (async/chan 200))]
+          tap-file (async/tap mult (async/chan))
+          tap-out (async/tap mult (async/chan))]
       (async->filewriter tap-file (gen-filename))
       (set! proc (async<-lineseq channel command))
       tap-out))

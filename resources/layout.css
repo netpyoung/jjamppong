@@ -1,27 +1,28 @@
 .root {
+    -fx-font-size: 9pt;
     /* -fx-background-color: #ffffff; */
 }
 
-.table-row-cell:V {
-    -fx-base: brown;
+.table-row-cell:V .text {
+    -fx-fill: #000000;
 }
 
-.table-row-cell:D {
-    -fx-base: brown;
+.table-row-cell:D .text {
+    -fx-fill: #0000AA;
 }
 
-.table-row-cell:I {
-    -fx-base: white;
+.table-row-cell:I .text {
+    -fx-fill: #009A00;
 }
 
-.table-row-cell:W {
-    -fx-base: yellow;
+.table-row-cell:W .text {
+    -fx-fill: #FF9A00;
 }
 
-.table-row-cell:E {
-    -fx-base: red;
+.table-row-cell:E .text {
+    -fx-fill: #FF0000;
 }
 
-.table-row-cell:F {
-    -fx-base: brown;
+.table-row-cell:F .text {
+    -fx-fill: #FF0000;
 }
