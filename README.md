@@ -26,15 +26,15 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 
 
 ## TODO
-- [ ] open log async
 - [ ] device list
-- [ ] install/remove app
-- [ ] highlight
-- [ ] error hightligh - https://github.com/frosch95/SmartCSV.fx/blob/master/src/main/java/ninja/javafx/smartcsv/fx/list/ErrorSideBar.java
-- [ ] filter
+- [ ] filter - window
     - [ ] message contain/remove (optional regex)
     - [ ] tag, pid, tid
     - [ ] easy add/remove/enable/disable
+- [ ] install/remove app
+- [ ] highlight
+- [ ] error hightligh - https://github.com/frosch95/SmartCSV.fx/blob/master/src/main/java/ninja/javafx/smartcsv/fx/list/ErrorSideBar.java
+- [ ] open log async
 - [ ] data view
     - [ ] xml, json
     - [ ] url encode/decode
@@ -50,7 +50,7 @@ When i was testing android app via `adb logcat`, It's not enough for me.
    - [ ] plugin
    - [ ] diff
    - [ ] dark theme
-
+- [ ] refinement pattern - philosophy.
 
 ## styling
 * http://fxexperience.com/controlsfx/

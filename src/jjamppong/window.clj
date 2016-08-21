@@ -6,10 +6,13 @@
    [jjamppong.protocols :as impl]
    [jjamppong.watcher :as watcher]
    [clojure.reflect :as r]
+   [clojure.string :as str]
    [named-re.re :as re]
    [clojure.core.async :as async])
 
   (:import
+   ;; [jjamppong.protocols.IMainWindowFX]
+
    [java.lang Enum]
    [java.net URL]
    [java.util ResourceBundle]
@@ -142,20 +145,6 @@
   (reify java.util.function.Predicate
     (test [this arg] (f arg))))
 
-(definterface IMainWindowFX
-  (close [])
-
-  (^{:tag void} on_btn_start [^javafx.event.ActionEvent event])
-  (^{:tag void} on_btn_clear [^javafx.event.ActionEvent event])
-  (^{:tag void} on_btn_stop [^javafx.event.ActionEvent event])
-  (^{:tag void} on_check_lvl [^javafx.event.ActionEvent event])
-  ;; (^{:tag void} on_txt_filter_changed [^javafx.beans.value.ObservableValue observable, ^Object oldValue, ^Object newValue])
-  ;; (^{:tag void} on_txt_filter_changed [^java.awt.event.InputMethodEvent event])
-
-  (^{:tag void} on_txt_filter_changed [^javafx.scene.input.KeyEvent event])
-
-  )
-
 ;; (defmacro callback
 ;;   "Reifies the callback interface."
 ;;   ;; ref: https://github.com/sonicsmooth/msclojure-junk/blob/master/tableview/src/clojure/tableview/utils.clj#L84
@@ -266,7 +255,10 @@
   (atom
    {:tags #{"V" "D" "I" "W" "E" "F"}
     :filter-text ""
-    :filter-text-is-regex false}))
+    :filter-is-ignorecase false
+    :filter-is-regex false
+    }))
+
 
 (deftype MainWindow
          [proc_adb
@@ -310,22 +302,31 @@
 
   (update-predicate [this filter-list]
     (locking +GLOBAL_LOCK+
-
       (.setPredicate
        filter-list
-       (f-to-predicate (fn [p]
-                         (let [level (:level p)
-                               message (:message p)]
-                           (if (and (get (:tags @filter-atom) level)
-                                    (re-find (re-pattern (:filter-text @filter-atom)) message))
-                             true
-                             false)))))))
+       (f-to-predicate
+        (fn [p]
+          (let [{:keys [level message]} p
+                {:keys [tags filter-text filter-is-regex filter-is-ignorecase]} @filter-atom]
+            (if-not (get tags level)
+              false
+              (if filter-is-regex
+                (if filter-is-ignorecase
+                  (some? (re-find (re-pattern (str "(?i)" filter-text)) message))
+                  (some? (re-find (re-pattern filter-text) message)))
+                (if filter-is-ignorecase
+                  (str/includes? (str/lower-case message) (str/lower-case filter-text))
 
-  IMainWindowFX
+                  (str/includes? message filter-text))
+                ))))))))
+
+  ;; wtf this ugly interface declare
+  jjamppong.protocols.IMainWindowFX
   (close [this]
     (impl/init this))
 
-  (^{:tag void} on_btn_start [this ^javafx.event.ActionEvent event]
+  (^{:tag void}
+   on_btn_start [this ^javafx.event.ActionEvent event]
    (doto this
      (.on_btn_stop event)
      (.on_btn_clear event))
@@ -336,16 +337,18 @@
    (-> (impl/run @proc_adb)
        (async->tableobservable table_contents)))
 
-  (^{:tag void} on_btn_clear [this ^javafx.event.ActionEvent event]
+  (^{:tag void}
+   on_btn_clear [this ^javafx.event.ActionEvent event]
     (.clear table_contents))
 
-  (^{:tag void} on_btn_stop [this ^javafx.event.ActionEvent event]
+  (^{:tag void}
+   on_btn_stop [this ^javafx.event.ActionEvent event]
    (impl/init this)
    ;; (test-popup (.getWindow (.getScene (.getSource event))))
    )
 
-
-  (^{:tag void} on_check_lvl [this ^javafx.event.ActionEvent event]
+  (^{:tag void}
+   on_check_lvl [this ^javafx.event.ActionEvent event]
    (let [event-source ^javafx.scene.control.CheckBox (.getSource event)]
      (defonce check-dic
        {check_lvl_v "V"
@@ -361,11 +364,22 @@
          (swap! filter-atom update-in [:tags] disj tag))))
    (impl/update-predicate this filtered))
 
-  (^{:tag void} on_txt_filter_changed [this ^javafx.scene.input.KeyEvent event]
-
+  (^{:tag void}
+   on_txt_filter_changed [this ^javafx.scene.input.KeyEvent event]
    (swap! filter-atom assoc :filter-text  (.getText (.getSource event)))
    (impl/update-predicate this filtered)
    )
+  (^{:tag void}
+   on_check_ignorecase [this ^javafx.event.ActionEvent event]
+   (let [event-source (.getSource event)]
+     (swap! filter-atom assoc :filter-is-ignorecase (.isSelected event-source)))
+   (impl/update-predicate this filtered))
+
+  (^{:tag void}
+   on_check_regex [this ^javafx.event.ActionEvent event]
+   (let [event-source (.getSource event)]
+     (swap! filter-atom assoc :filter-is-regex (.isSelected event-source)))
+   (impl/update-predicate this filtered))
 )
 
 (defn gen-MainWindow []

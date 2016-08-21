@@ -133,12 +133,24 @@
                            <right>
                               <Region maxWidth="-Infinity" minWidth="40.0" prefWidth="40.0" style="-fx-background-color: #FF00FF;" BorderPane.alignment="CENTER" />
                            </right>
-                           <top>
-                              <TextField fx:id="txt_filter" onKeyReleased="#on_txt_filter_changed" BorderPane.alignment="CENTER" />
-                           </top>
                            <center>
                               <TableView fx:id="table_log" editable="true" focusTraversable="false" tableMenuButtonVisible="true" BorderPane.alignment="CENTER" />
                            </center>
+                           <top>
+                              <BorderPane prefHeight="27.0" prefWidth="772.0" BorderPane.alignment="CENTER">
+                                 <center>
+                                    <TextField fx:id="txt_filter" onKeyReleased="#on_txt_filter_changed" BorderPane.alignment="CENTER" />
+                                 </center>
+                                 <right>
+                                    <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+                                       <children>
+                                          <CheckBox mnemonicParsing="false" onAction="#on_check_ignorecase" text="ignorecase" />
+                                          <CheckBox mnemonicParsing="false" onAction="#on_check_regex" text="regex" />
+                                       </children>
+                                    </VBox>
+                                 </right>
+                              </BorderPane>
+                           </top>
                         </BorderPane>
                      </children>
                   </GridPane>
