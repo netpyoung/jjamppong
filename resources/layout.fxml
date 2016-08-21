@@ -42,6 +42,12 @@
                         </MenuItem>
                   </items>
                 </Menu>
+                  <Menu mnemonicParsing="false" text="action">
+                     <items>
+                        <MenuItem fx:id="menuitem_scan" mnemonicParsing="false" onAction="#on_btn_scan" text="scan" />
+                        <MenuItem fx:id="menuitem_run" mnemonicParsing="false" onAction="#on_btn_start" text="run" />
+                     </items>
+                  </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
                   <items>
                     <MenuItem mnemonicParsing="false" text="Delete" />

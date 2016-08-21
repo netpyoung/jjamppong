@@ -262,6 +262,7 @@
                 (.showAndWait))]))
 
 (defn get-devices []
+  ;; TODO(kep): handle offline
   (->> (clojure.java.shell/sh "adb" "devices")
        :out
        (str/split-lines)
@@ -273,6 +274,8 @@
          [proc_adb
           table_contents
           filtered
+          ^{FXML [] :unsynchronized-mutable true} menuitem_scan
+          ^{FXML [] :unsynchronized-mutable true} menuitem_run
           ^{FXML [] :unsynchronized-mutable true} list_devices
           ^{FXML [] :unsynchronized-mutable true} btn_clear
           ^{FXML [] :unsynchronized-mutable true} btn_start
@@ -301,6 +304,11 @@
     (.setDisable btn_clear true)
     (.setDisable btn_start false)
     ;; (.setDisable btn_stop true)
+
+    (.setAccelerator menuitem_scan
+                     (KeyCodeCombination. KeyCode/E (into-array KeyCombination$Modifier [KeyCombination/CONTROL_DOWN])))
+    (.setAccelerator menuitem_run
+                     (KeyCodeCombination. KeyCode/R (into-array KeyCombination$Modifier [KeyCombination/CONTROL_DOWN])))
 )
 
   (load [this fpath]
@@ -336,14 +344,10 @@
 
   (^{:tag void}
    on_btn_scan [this ^javafx.event.ActionEvent event]
-
-   (println (get-devices))
-   (println list_devices)
    (doto list_devices
      (.setItems (FXCollections/observableArrayList (get-devices))))
-
-
-   )
+   (.selectFirst
+     (.getSelectionModel list_devices)))
 
   (^{:tag void}
    on_btn_start [this ^javafx.event.ActionEvent event]
@@ -409,6 +413,8 @@
      (atom nil)                             ;proc_adb
      observable                             ;table_contents
      filtered                               ;filtered
+     nil                                    ;menuitem_scan
+     nil                                    ;menuitem_run
      nil                                    ;list_devices
      nil                                    ;btn_clear
      nil                                    ;btn_start
