@@ -34,9 +34,10 @@
    [javafx.collections FXCollections ListChangeListener]))
 
 
-(def filter-atom
+(def config-atom
   (atom
    {:tags #{"V" "D" "I" "W" "E" "F"}
+    :auto-scroll true
     :filter-text ""
     :filter-is-ignorecase false
     :filter-is-regex false
@@ -134,19 +135,21 @@
 
 (defn auto-scroll [table]
   ;; TODO(kep): is too laggy scrollTo. need to refactoring.
+  ;; TODO(kep): disable auto-scroll
   (.. table
       (getItems)
       (addListener
        (reify ListChangeListener
          (onChanged [this change]
            (.next change)
-           (let [s (.. table getItems size)]
-             (when (pos? s)
-               (javafx.application.Platform/runLater
-                #(do
-                   (let [itm (first (.getAddedSubList change))]
-                     (when (instance? Log itm)
-                       (.scrollTo table itm))))))))))))
+           (when (:auto-scroll @config-atom)
+             (let [s (.. table getItems size)]
+               (when (pos? s)
+                 (javafx.application.Platform/runLater
+                  #(do
+                     (let [itm (first (.getAddedSubList change))]
+                       (when (instance? Log itm)
+                         (.scrollTo table itm)))))))))))))
 
 
 (defn ^java.util.function.Predicate f-to-predicate [f]
@@ -331,7 +334,7 @@
      (f-to-predicate
       (fn [p]
         (let [{:keys [level message]} p
-              {:keys [tags filter-text filter-is-regex filter-is-ignorecase]} @filter-atom]
+              {:keys [tags filter-text filter-is-regex filter-is-ignorecase]} @config-atom]
           (if-not (get tags level)
             false
             (if filter-is-regex
@@ -390,25 +393,25 @@
         })
      (let [tag (get check-dic event-source)]
        (if (.isSelected event-source)
-         (swap! filter-atom update-in [:tags] conj tag)
-         (swap! filter-atom update-in [:tags] disj tag))))
+         (swap! config-atom update-in [:tags] conj tag)
+         (swap! config-atom update-in [:tags] disj tag))))
    (impl/update-predicate this filtered))
 
   (^{:tag void}
    on_txt_filter_changed [this ^javafx.scene.input.KeyEvent event]
-   (swap! filter-atom assoc :filter-text  (.getText (.getSource event)))
+   (swap! config-atom assoc :filter-text  (.getText (.getSource event)))
    (impl/update-predicate this filtered))
 
   (^{:tag void}
    on_check_ignorecase [this ^javafx.event.ActionEvent event]
    (let [event-source (.getSource event)]
-     (swap! filter-atom assoc :filter-is-ignorecase (.isSelected event-source)))
+     (swap! config-atom assoc :filter-is-ignorecase (.isSelected event-source)))
    (impl/update-predicate this filtered))
 
   (^{:tag void}
    on_check_regex [this ^javafx.event.ActionEvent event]
    (let [event-source (.getSource event)]
-     (swap! filter-atom assoc :filter-is-regex (.isSelected event-source)))
+     (swap! config-atom assoc :filter-is-regex (.isSelected event-source)))
    (impl/update-predicate this filtered))
 )
 
