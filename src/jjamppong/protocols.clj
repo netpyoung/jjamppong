@@ -13,6 +13,7 @@
 
 (definterface IMainWindowFX
   (close [])
+  (^{:tag void} on_btn_scan [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_start [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_clear [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_stop [^javafx.event.ActionEvent event])

@@ -27,6 +27,7 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 
 ## TODO
 - [ ] device list
+  - [ ] left side show/hide
 - [ ] filter - window
     - [ ] message contain/remove (optional regex)
     - [ ] tag, pid, tid

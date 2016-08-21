@@ -22,12 +22,6 @@
 ;;       (clojure.java.io/reader)))
 
 
-;; (defn get-devices []
-;;   (->> "adb devices"
-;;        (cmd->line-seq)
-;;        (filter #(re-matches #"[0-9].*" %))
-;;        (map #(str/replace % #"\tdevice" ""))
-;;        (map #(str/replace % #"\toffline" ""))))
 
 (defn fpath->writer [fpath]
   (-> (FileSystems/getDefault)
@@ -94,9 +88,8 @@
     (async/close! channel)
     (set! channel nil)))
 
-(defn new-watcher []
+(defn new-watcher [device]
   (let [command "adb"
-        device "192.168.58.101:5555"
         combined-command [command "logcat" device]
         channel nil
         proc nil]

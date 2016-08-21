@@ -33,6 +33,15 @@
    [javafx.event ActionEvent EventHandler]
    [javafx.collections FXCollections ListChangeListener]))
 
+
+(def filter-atom
+  (atom
+   {:tags #{"V" "D" "I" "W" "E" "F"}
+    :filter-text ""
+    :filter-is-ignorecase false
+    :filter-is-regex false
+    }))
+
 (defonce +ONCE+ (javafx.embed.swing.JFXPanel.))
 
 (defn alert [title header content]
@@ -237,6 +246,7 @@
              (logline->Log)
              (.add observable))))))
 
+;; (test-popup (.getWindow (.getScene (.getSource event))))
 (defn test-popup [window]
   (let [fxml (clojure.java.io/resource "dialog.fxml")
         ;; controller (gen-MainWindow)
@@ -251,19 +261,19 @@
                 (.initOwner window)
                 (.showAndWait))]))
 
-(def filter-atom
-  (atom
-   {:tags #{"V" "D" "I" "W" "E" "F"}
-    :filter-text ""
-    :filter-is-ignorecase false
-    :filter-is-regex false
-    }))
-
+(defn get-devices []
+  (->> (clojure.java.shell/sh "adb" "devices")
+       :out
+       (str/split-lines)
+       (filter #(re-matches #"[0-9].*" %))
+       (map #(str/replace % #"\tdevice" ""))
+       (map #(str/replace % #"\toffline" ""))))
 
 (deftype MainWindow
          [proc_adb
           table_contents
           filtered
+          ^{FXML [] :unsynchronized-mutable true} list_devices
           ^{FXML [] :unsynchronized-mutable true} btn_clear
           ^{FXML [] :unsynchronized-mutable true} btn_start
           ^{FXML [] :unsynchronized-mutable true} btn_stop
@@ -301,24 +311,23 @@
     table_log)
 
   (update-predicate [this filter-list]
-    (locking +GLOBAL_LOCK+
-      (.setPredicate
-       filter-list
-       (f-to-predicate
-        (fn [p]
-          (let [{:keys [level message]} p
-                {:keys [tags filter-text filter-is-regex filter-is-ignorecase]} @filter-atom]
-            (if-not (get tags level)
-              false
-              (if filter-is-regex
-                (if filter-is-ignorecase
-                  (some? (re-find (re-pattern (str "(?i)" filter-text)) message))
-                  (some? (re-find (re-pattern filter-text) message)))
-                (if filter-is-ignorecase
-                  (str/includes? (str/lower-case message) (str/lower-case filter-text))
+    ;; TODO(kep): too long. need to refactoring
+    (.setPredicate
+     filter-list
+     (f-to-predicate
+      (fn [p]
+        (let [{:keys [level message]} p
+              {:keys [tags filter-text filter-is-regex filter-is-ignorecase]} @filter-atom]
+          (if-not (get tags level)
+            false
+            (if filter-is-regex
+              (if filter-is-ignorecase
+                (some? (re-find (re-pattern (str "(?i)" filter-text)) message))
+                (some? (re-find (re-pattern filter-text) message)))
+              (if filter-is-ignorecase
+                (str/includes? (str/lower-case message) (str/lower-case filter-text))
 
-                  (str/includes? message filter-text))
-                ))))))))
+                (str/includes? message filter-text)))))))))
 
   ;; wtf this ugly interface declare
   jjamppong.protocols.IMainWindowFX
@@ -326,16 +335,28 @@
     (impl/init this))
 
   (^{:tag void}
+   on_btn_scan [this ^javafx.event.ActionEvent event]
+
+   (println (get-devices))
+   (println list_devices)
+   (doto list_devices
+     (.setItems (FXCollections/observableArrayList (get-devices))))
+
+
+   )
+
+  (^{:tag void}
    on_btn_start [this ^javafx.event.ActionEvent event]
-   (doto this
-     (.on_btn_stop event)
-     (.on_btn_clear event))
-   (.setDisable btn_clear false)
-   (.setDisable btn_start true)
-   (.setDisable btn_stop false)
-   (reset! proc_adb (watcher/new-watcher))
-   (-> (impl/run @proc_adb)
-       (async->tableobservable table_contents)))
+   (when-let [device (.getSelectedItem (.getSelectionModel list_devices))]
+     (doto this
+       (.on_btn_stop event)
+       (.on_btn_clear event))
+     (.setDisable btn_clear false)
+     (.setDisable btn_start true)
+     (.setDisable btn_stop false)
+     (reset! proc_adb (watcher/new-watcher device))
+     (-> (impl/run @proc_adb)
+         (async->tableobservable table_contents))))
 
   (^{:tag void}
    on_btn_clear [this ^javafx.event.ActionEvent event]
@@ -343,9 +364,7 @@
 
   (^{:tag void}
    on_btn_stop [this ^javafx.event.ActionEvent event]
-   (impl/init this)
-   ;; (test-popup (.getWindow (.getScene (.getSource event))))
-   )
+   (impl/init this))
 
   (^{:tag void}
    on_check_lvl [this ^javafx.event.ActionEvent event]
@@ -367,8 +386,8 @@
   (^{:tag void}
    on_txt_filter_changed [this ^javafx.scene.input.KeyEvent event]
    (swap! filter-atom assoc :filter-text  (.getText (.getSource event)))
-   (impl/update-predicate this filtered)
-   )
+   (impl/update-predicate this filtered))
+
   (^{:tag void}
    on_check_ignorecase [this ^javafx.event.ActionEvent event]
    (let [event-source (.getSource event)]
@@ -390,6 +409,7 @@
      (atom nil)                             ;proc_adb
      observable                             ;table_contents
      filtered                               ;filtered
+     nil                                    ;list_devices
      nil                                    ;btn_clear
      nil                                    ;btn_start
      nil                                    ;btn_stop
