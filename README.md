@@ -26,8 +26,10 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 
 
 ## TODO
+- [ ] adb path config
 - [ ] device list
   - [ ] left side show/hide
+- [ ] support adb shell monkey -v 100
 - [ ] filter - window
     - [ ] message contain/remove (optional regex)
     - [ ] tag, pid, tid
@@ -45,7 +47,8 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 - [ ] source open if unity log
 - [ ] event, kernel log
 - [ ] excutable
-- [ ] bookmark
+- [ ] bookmark - save/load
+- [ ] goto line
 - [ ] notify
 - [ ] maybe
    - [ ] plugin
