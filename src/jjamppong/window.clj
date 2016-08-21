@@ -255,6 +255,12 @@
                 (.initOwner window)
                 (.showAndWait))]))
 
+(def filter-atom
+  (atom
+   {:tags #{"V" "D" "I" "W" "E" "F"}
+    :filter-text ""
+    :filter-text-is-regex false}))
+
 (deftype MainWindow
          [proc_adb
           table_contents
@@ -268,6 +274,7 @@
           ^{FXML [] :unsynchronized-mutable true} check_lvl_w
           ^{FXML [] :unsynchronized-mutable true} check_lvl_e
           ^{FXML [] :unsynchronized-mutable true} check_lvl_f
+          ^{FXML [] :unsynchronized-mutable true} txt_filter
           ^{FXML [] :unsynchronized-mutable true} table_log]
 
   javafx.fxml.Initializable
@@ -294,6 +301,18 @@
   (get-table [this]
     table_log)
 
+  (update-predicate [this filter-list]
+    (.setPredicate
+     filter-list
+     (f-to-predicate (fn [p]
+                       (let [level (:level p)]
+                         (if (get (:tags @filter-atom) level)
+                           true
+                           false
+                           )
+                         )
+                       ))))
+
   IMainWindowFX
   (close [this]
     (impl/init this))
@@ -317,20 +336,24 @@
    ;; (test-popup (.getWindow (.getScene (.getSource event))))
    )
 
+
   (^{:tag void} on_check_lvl [this ^javafx.event.ActionEvent event]
-    (locking +GLOBAL_LOCK+
-      (.setPredicate
-       filtered
-       (f-to-predicate (fn [p]
-                         (let [level (:level p)]
-                           (condp = level
-                             "V" (.isSelected check_lvl_v)
-                             "D" (.isSelected check_lvl_d)
-                             "I" (.isSelected check_lvl_i)
-                             "W" (.isSelected check_lvl_w)
-                             "E" (.isSelected check_lvl_e)
-                             "F" (.isSelected check_lvl_f)
-                             true))))))))
+   (let [event-source ^javafx.scene.control.CheckBox (.getSource event)]
+     (defonce check-dic
+       {check_lvl_v "V"
+        check_lvl_d "D"
+        check_lvl_i "I"
+        check_lvl_w "W"
+        check_lvl_e "E"
+        check_lvl_f "F"
+        })
+     (let [tag (get check-dic event-source)]
+       (if (.isSelected event-source)
+         (swap! filter-atom update-in [:tags] conj tag)
+         (swap! filter-atom update-in [:tags] disj tag))))
+   (impl/update-predicate this filtered)))
+
+
 
 (defn gen-MainWindow []
   (let [observable (FXCollections/observableArrayList [])
@@ -349,6 +372,7 @@
      nil                                    ;check_lvl_w
      nil                                    ;check_lvl_e
      nil                                    ;check_lvl_f
+     nil                                    ;txt_filter
      nil                                    ;table_log
 )))
 

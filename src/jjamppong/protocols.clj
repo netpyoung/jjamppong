@@ -8,4 +8,5 @@
 (defprotocol IMainWindow
   (init [this])
   (get-table [this])
+  (update-predicate [this filter-list])
   (load [this fpath]))

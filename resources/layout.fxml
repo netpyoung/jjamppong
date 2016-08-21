@@ -134,7 +134,7 @@
                               <Region maxWidth="-Infinity" minWidth="40.0" prefWidth="40.0" style="-fx-background-color: #FF00FF;" BorderPane.alignment="CENTER" />
                            </right>
                            <top>
-                              <TextField BorderPane.alignment="CENTER" />
+                              <TextField fx:id="txt_filter" BorderPane.alignment="CENTER" />
                            </top>
                            <center>
                               <TableView fx:id="table_log" editable="true" focusTraversable="false" tableMenuButtonVisible="true" BorderPane.alignment="CENTER" />
