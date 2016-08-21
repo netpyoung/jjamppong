@@ -69,6 +69,7 @@
 
 (let [copyKeyCodeCompination
       (KeyCodeCombination. KeyCode/C (into-array KeyCombination$Modifier [KeyCombination/SHORTCUT_DOWN]))]
+  ;; FIXME(kep): copy clipboard duplicate
   (def evt-handler
     (event-handler*
      (fn [^KeyEvent e]
@@ -274,6 +275,7 @@
          [proc_adb
           table_contents
           filtered
+          ^{FXML [] :unsynchronized-mutable true} status_bar
           ^{FXML [] :unsynchronized-mutable true} menuitem_scan
           ^{FXML [] :unsynchronized-mutable true} menuitem_run
           ^{FXML [] :unsynchronized-mutable true} list_devices
@@ -313,7 +315,11 @@
 
   (load [this fpath]
     (impl/init this)
+    (impl/update-status-message this fpath)
     (ffff fpath table_contents))
+
+  (update-status-message [this message]
+    (.setText status_bar message))
 
   (get-table [this]
     table_log)
@@ -358,6 +364,7 @@
      (.setDisable btn_clear false)
      (.setDisable btn_start true)
      (.setDisable btn_stop false)
+     (impl/update-status-message this device)
      (reset! proc_adb (watcher/new-watcher device))
      (-> (impl/run @proc_adb)
          (async->tableobservable table_contents))))
@@ -413,6 +420,7 @@
      (atom nil)                             ;proc_adb
      observable                             ;table_contents
      filtered                               ;filtered
+     nil                                    ;status_bar
      nil                                    ;menuitem_scan
      nil                                    ;menuitem_run
      nil                                    ;list_devices

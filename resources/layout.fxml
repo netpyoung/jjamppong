@@ -81,7 +81,7 @@
             </GridPane>
          </left>
          <bottom>
-            <StatusBar progress="0.5" text="(TEST) this is statusbar" BorderPane.alignment="CENTER" />
+            <StatusBar fx:id="status_bar" progress="0.5" text="(TEST) this is statusbar" BorderPane.alignment="CENTER" />
          </bottom>
          <center>
             <StackPane prefHeight="150.0" prefWidth="721.0" BorderPane.alignment="CENTER">

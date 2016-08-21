@@ -9,7 +9,9 @@
   (init [this])
   (get-table [this])
   (update-predicate [this filter-list])
-  (load [this fpath]))
+  (load [this fpath])
+  (update-status-message [this message])
+  )
 
 (definterface IMainWindowFX
   (close [])
