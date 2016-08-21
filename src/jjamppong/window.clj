@@ -103,6 +103,7 @@
       (map->Log m)
       (map->Log {:message log}))))
 
+;; TODO(kep): REMOVE global_lock. need to solve clojure's way.
 (def +GLOBAL_LOCK+ (Object.))
 
 (defn async->tableobservable [ch observable]
@@ -117,7 +118,7 @@
 
 
 (defn auto-scroll [table]
-  ;; i don't know why it isn't working
+  ;; TODO(kep): is too laggy scrollTo. need to refactoring.
   (.. table
       (getItems)
       (addListener
@@ -128,17 +129,10 @@
              (when (pos? s)
                (javafx.application.Platform/runLater
                 #(do
-
                    (let [itm (first (.getAddedSubList change))]
                      (when (instance? Log itm)
-                       ;; (.scrollTo table itm)
-                       (.scrollTo table (.. table getItems (get (- s 1))))
-                       )
-                     ;; (.scrollTo table ^Int (- s 1)
-                     )))
-               )))))
-      )
-  )
+                       (.scrollTo table itm))))))))))))
+
 
 (defn ^java.util.function.Predicate f-to-predicate [f]
   ;; https://github.com/clojurewerkz/ogre/blob/master/src/clojure/clojurewerkz/ogre/util.clj
@@ -205,12 +199,12 @@
                         (.setCellValueFactory (MapValueFactory. (keyword x)))))))))
     (.setOnKeyPressed evt-handler)
     (.setRowFactory (hello))
-
     (.setItems items)
-    (auto-scroll)
-    ))
+    (auto-scroll)))
+
 
 (defn register-drag-drop-event [scene controller]
+  ;; TODO(kep): need to write EventHandler macro.
   (doto scene
     (.setOnDragOver
      (reify javafx.event.EventHandler
@@ -259,10 +253,7 @@
                 (.setTitle "jjamppong")
                 (.initModality Modality/APPLICATION_MODAL)
                 (.initOwner window)
-                (.showAndWait))]
-    )
-  )
-
+                (.showAndWait))]))
 
 (deftype MainWindow
          [proc_adb
@@ -404,16 +395,3 @@
   (map->Window {:is-dev false
                 :_stage (atom nil)
                 :_window (atom nil)}))
-
-
-(defn scroll [^Integer x]
-  (let [table ^TableView (.get-table @(:_window (:window system)))]
-    (javafx.application.Platform/runLater
-     #(do
-        (.. table requestFocus)
-        (.. table getFocusModel (focus x))
-        (.. table getSelectionModel (select x))
-        (.. table (scrollTo x))))))
-
-(defn find-table []
-  (.get-table @(:_window (:window system))))
