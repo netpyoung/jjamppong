@@ -42,8 +42,10 @@
 
 
 
-(defprotocol ItmHighlightFX
-  (update [this item]))
+(definterface ItmHighlightFX
+  (update [item])
+  (^{:tag void} on_check [^javafx.event.ActionEvent event])
+  )
 
 (deftype ItmHighlight
     [
@@ -58,43 +60,41 @@
   ItmHighlightFX
   (update [this item]
     (println "FFFFF" [this item]))
+  (^{:tag void} on_check [this ^javafx.event.ActionEvent event]
+   (println "check!!"))
   )
 
 
 (defn gen-NodeController []
-  (ItmHighlight. nil nil)
-  )
+  (ItmHighlight. nil nil))
 
-(defn get-cellfactory []
-  (println "AAAA")
-  (reify javafx.util.Callback
-    (call [_ param]
-      (proxy [javafx.scene.control.ListCell] []
-        (updateItem [item empty]
-          (proxy-super updateItem item empty)
-          (if (or (nil? item) (nil? empty))
-            (.setGraphic this nil)
-            (if (nil? (.getGraphic this))
-              (let [fxml (clojure.java.io/resource "itm_highlight.fxml")
-                    controller (gen-NodeController)
-                    loader (doto (FXMLLoader. fxml)
-                             (.setController controller))
-                    node (.load loader)]
-                (.. this (setGraphic node))
-                (.. controller (update item))
-                )
-              (println "HELLO" [this item])
-              )))))))
+(let [fxml (clojure.java.io/resource "itm_highlight.fxml")]
+  (defn get-cellfactory []
+    (let [is-initialized (atom false)]
+      (reify javafx.util.Callback
+        (call [_ param]
+          (proxy [javafx.scene.control.ListCell] []
+            (updateItem [item is-empty]
+              (proxy-super updateItem item is-empty)
+              (if (or is-empty (nil? item))
+                (.setGraphic this nil)
+                (if (or (not @is-initialized) (nil? (.getGraphic this)))
+                  (let [
+                        controller (gen-NodeController)
+                        loader (doto (FXMLLoader. fxml)
+                                 (.setController controller))
+                        node (.load loader)]
+                    (.. this (setGraphic node))
+                    (.. controller (update item))
+                    (println "init"))
+                  (.. this (update item)))))))))))
 
 (defn eeinit-listview [listview items]
-  (println "FFFF" [listview items])
-  (.setCellFactory
-   listview
-   (get-cellfactory)
-   )
-  (.setItems listview items)
-  )
-
+  (doto listview
+    (.setCellFactory (get-cellfactory))
+    (.setItems items)
+    (.. (getSelectionModel)
+        (setSelectionMode SelectionMode/MULTIPLE))))
 
 (definterface IHighlightWindowFX
   (^{:tag void} on_btn_add [^javafx.event.ActionEvent event])
@@ -126,12 +126,19 @@
    )
   IHighlightWindowFX
   (^{:tag void} on_btn_add [this ^javafx.event.ActionEvent event]
-   (.add @atom_table_contents 1)
-   )
-  (^{:tag void} on_btn_remove [this ^javafx.event.ActionEvent event]
-   ;; (.add @atom_table_contents 1)
+   (.add @atom_table_contents 1))
 
-   )
+  (^{:tag void} on_btn_remove [this ^javafx.event.ActionEvent event]
+   (let [items (.. list_highlight
+                   getSelectionModel
+                   getSelectedItems)]
+     (.. list_highlight getItems (removeAll items))
+     (.. list_highlight
+         getSelectionModel
+         clearSelection)
+
+     ))
+
   (^{:tag void} on_btn_up [this ^javafx.event.ActionEvent event]
    ;; (.add @atom_table_contents 1)
 
