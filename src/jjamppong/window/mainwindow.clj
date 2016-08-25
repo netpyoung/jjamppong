@@ -5,6 +5,7 @@
    [jjamppong.macros :as m]
    [jjamppong.protocols :as impl]
    [jjamppong.watcher :as watcher]
+   [jjamppong.window.highlight-window]
    [clojure.reflect :as r]
    [clojure.string :as str]
    [named-re.re :as re]
@@ -278,10 +279,11 @@
 
   javafx.fxml.Initializable
   (^{:tag void}
-    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
-    (init-table table_log filtered)
+   initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
+   (init-table table_log filtered)
    ;; (.setUseSystemMenuBar menu_bar true)
-    (impl/init self))
+   (impl/init self)
+   )
 
   impl/IMainWindow
   (init [this]
@@ -342,17 +344,24 @@
 
   (^{:tag void}
    on_btn_start [this ^javafx.event.ActionEvent event]
-   (when-let [device (.getSelectedItem (.getSelectionModel list_devices))]
-     (doto this
-       (.on_btn_stop event)
-       (.on_btn_clear event))
-     (.setDisable btn_clear false)
-     (.setDisable btn_start true)
-     (.setDisable btn_stop false)
-     (impl/update-status-message this device)
-     (reset! proc_adb (watcher/new-watcher device))
-     (-> (impl/run @proc_adb)
-         (async->tableobservable atom_table_contents))))
+   ;; (when-let [device (.getSelectedItem (.getSelectionModel list_devices))]
+   ;;   (doto this
+   ;;     (.on_btn_stop event)
+   ;;     (.on_btn_clear event))
+   ;;   (.setDisable btn_clear false)
+   ;;   (.setDisable btn_start true)
+   ;;   (.setDisable btn_stop false)
+   ;;   (impl/update-status-message this device)
+   ;;   (reset! proc_adb (watcher/new-watcher device))
+   ;;   (-> (impl/run @proc_adb)
+   ;;       (async->tableobservable atom_table_contents)))
+   (println "a")
+   (jjamppong.window.highlight-window/test-popup
+    (.getWindow (.getScene (.getSource event))))
+   (println "b")
+   ;; (test-popup (.getWindow (.getScene (.getSource event))))
+
+   )
 
   (^{:tag void}
    on_btn_clear [this ^javafx.event.ActionEvent event]

@@ -1,13 +1,27 @@
 # [WIP] Jjamppong
 
 `Jjamppong` is gui logcat written in [Clojure]
+* this is toy project for experience of gui and playground of clojure's techiniq.
 
 * this project's name is temporary. so, this repository url will be changed (maybe)
 
+* coding coding until tired.
+* thinking thinking until enlightenment.
 
 [![jjamppong](https://img.youtube.com/vi/X9a6c1IQp0o/0.jpg)](https://www.youtube.com/watch?v=X9a6c1IQp0o)
 
 
+## Play
+* http://boot-clj.com/
+
+``` clojure
+# dev
+> boot dev
+
+# production
+> boot build
+> java -jar target/project.jar
+```
 
 
 ## history
@@ -23,6 +37,8 @@ When i was testing android app via `adb logcat`, It's not enough for me.
   - Reloaded
 * https://github.com/rufoa/named-re
   - Named capturing group support for clojure regular expressions
+
+
 
 
 ## TODO
@@ -55,6 +71,14 @@ When i was testing android app via `adb logcat`, It's not enough for me.
    - [ ] diff
    - [ ] dark theme
 - [ ] refinement pattern - philosophy.
+- [ ] external styling - https://github.com/wkf/hawk
+
+``` clojure
+File f = new File("filecss.css");
+scene.getStylesheets().clear();
+scene.getStylesheets().add("file:///" + f.getAbsolutePath().replace("\\", "/"));
+```
+
 
 ## styling
 * http://fxexperience.com/controlsfx/

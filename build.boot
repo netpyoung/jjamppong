@@ -71,7 +71,7 @@
    (watch)
    (system :sys #'dev-system
            :auto true
-           :files ["window.clj" "layout.fxml" "layout.css"])
+           :files ["highlight_window.clj" "layout.fxml" "layout.css"])
    (repl :server true :init-ns 'jjamppong.core)))
 
 
