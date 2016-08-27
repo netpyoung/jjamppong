@@ -41,7 +41,7 @@
 (defonce +ONCE+ (javafx.embed.swing.JFXPanel.))
 
 (definterface ItmHighlightFX
-  (update [item])
+  (update1 [item])
   (^{:tag void} on_check [^javafx.event.ActionEvent event])
   )
 
@@ -54,13 +54,14 @@
   javafx.fxml.Initializable
   (^{:tag void}
    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
-   (println "===================================")
    )
+
   ItmHighlightFX
-  (update [this item]
+  (update1 [this item]
     (set! _item item)
     (.setSelected check_example (@item :is-selected))
     (.setText lbl_filter_string (str item)))
+
   (^{:tag void} on_check [this ^javafx.event.ActionEvent event]
    (swap! _item assoc :is-selected (.isSelected check_example))))
 
@@ -73,28 +74,25 @@
   (defn gen-cellfactory []
     (reify javafx.util.Callback
       (call [_ param]
-        (println "TTTT" [_ param])
         (proxy [javafx.scene.control.ListCell] []
-
           (updateItem [item is-empty]
             (proxy-super updateItem item is-empty)
             (if (or is-empty (nil? item))
               (.setGraphic this nil)
-              (if (or (nil? (.getGraphic this)))
-                (let [
-                      controller (gen-NodeController)
-                      loader (doto (FXMLLoader. fxml)
-                               (.setController controller))
+              (do
+                (when (nil? (.getUserData this))
+                  ;; (println "BBB:" (bean this))
+                  (.setUserData this 1)
+                  (let [controller (gen-NodeController)
+                        loader (doto (FXMLLoader. fxml)
+                                 (.setController controller))
+                        node (.load loader)]
+                    (.setUserData this {:node node :controller controller})))
+                (when (nil? (.getGraphic this))
+                  (let [{:keys [node controller]} (.getUserData this)]
+                    (-> this (.setGraphic node))
+                    (.update1 controller item)))))))))))
 
-                      node (.load loader)]
-                  (.. this (setGraphic node))
-                  (println "XX1 " [item is-empty])
-                  (.. controller (update item))
-                  (println "XX2")
-                  (println "init")
-                  )
-                (println "FFFFFFFF")
-                ))))))))
 
 
 (defn eeinit-listview [listview items]
@@ -164,8 +162,7 @@
                       getSelectionModel
                       getSelectedItems)]
      (println "[[[]]]" [(count selected) (count items)])
-     (doseq [s selected]
-       (.. items (remove s)))))
+     (.. items (removeAll selected))))
 
   (^{:tag void} on_btn_up [this ^javafx.event.ActionEvent event]
    (let [selected (.. list_highlight
