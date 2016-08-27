@@ -11,7 +11,6 @@
    [clojure.java.shell]
    [clojure.core.async :as async])
 
-
   (:import
    [java.lang Enum]
    [java.net URL]
@@ -19,6 +18,7 @@
 
    ;; javafx
    [java.awt.event.InputMethodEvent]
+   ;; [java.beans.EventHandler]
    [javafx.beans.property SimpleStringProperty]
    [javafx.beans.value ObservableValue]
    [javafx.fxml FXMLLoader FXML]
@@ -29,7 +29,8 @@
    [javafx.scene.control Button Alert Alert$AlertType Cell TableColumn TableRow TableCell TableView SelectionMode ListCell]
    [javafx.scene.control.cell PropertyValueFactory MapValueFactory]
    [javafx.scene.input KeyCode KeyCodeCombination KeyCombination KeyEvent KeyCombination$Modifier
-    Clipboard ClipboardContent]
+    Clipboard ClipboardContent
+    DragEvent]
    [javafx.event ActionEvent EventHandler]
    [javafx.collections FXCollections ListChangeListener]
 
@@ -38,6 +39,7 @@
    [org.controlsfx.control.ListSelectionView]
    ))
 
+;;TODO(kep): need to manage this
 (defonce +ONCE+ (javafx.embed.swing.JFXPanel.))
 
 (definterface ItmHighlightFX
@@ -69,7 +71,39 @@
 (defn gen-NodeController []
   (ItmHighlight. false nil nil))
 
+(defn register-drag-event [cell]
+  ;; ref: http://blog.ngopal.com.np/2012/05/06/javafx-drag-and-drop-cell-in-listview/
+  (doto cell
+    (.setOnDragDetected
+     (reify javafx.event.EventHandler
+       (handle [this event]
+         )))
+    (.setOnDragOver
+     (reify javafx.event.EventHandler
+       (handle [this event]
+         (doto event
+           (.acceptTransferModes
+            (into-array [javafx.scene.input.TransferMode/COPY]))
+           (.consume)))))
 
+    (.setOnDragEntered
+     (reify javafx.event.EventHandler
+       (handle [this event]
+
+         )))
+
+    (.setOnDragExited
+     (reify javafx.event.EventHandler
+       (handle [this event]
+         )))
+
+    (.setOnDragDropped
+     (reify javafx.event.EventHandler
+       (handle [this event]
+         ))
+     )))
+
+;; FIXME(kep): Oh my eyes!
 (let [fxml (clojure.java.io/resource "itm_highlight.fxml")]
   (defn gen-cellfactory []
     (reify javafx.util.Callback
@@ -81,26 +115,29 @@
               (.setGraphic this nil)
               (do
                 (when (nil? (.getUserData this))
-                  ;; (println "BBB:" (bean this))
-                  (.setUserData this 1)
                   (let [controller (gen-NodeController)
                         loader (doto (FXMLLoader. fxml)
                                  (.setController controller))
                         node (.load loader)]
-                    (.setUserData this {:node node :controller controller})))
+                    (doto this
+                      ;; (register-drag-event)
+                      (.setUserData
+                       {:node node
+                        :controller controller}))
+                    ))
                 (when (nil? (.getGraphic this))
                   (let [{:keys [node controller]} (.getUserData this)]
                     (-> this (.setGraphic node))
-                    (.update1 controller item)))))))))))
+                    (-> controller (.update1 item))))))))))))
 
 
 
-(defn eeinit-listview [listview items]
+(defn init-listview [listview items]
   (doto listview
     (.setItems items)
     (.setCellFactory (gen-cellfactory))
-    (.. (getSelectionModel)
-        (setSelectionMode SelectionMode/MULTIPLE))))
+    (-> (.getSelectionModel)
+        (.setSelectionMode SelectionMode/MULTIPLE))))
 
 (definterface IHighlightWindowFX
   (hello [])
@@ -110,6 +147,12 @@
   (^{:tag void} on_btn_down [^javafx.event.ActionEvent event])
   )
 
+
+(defn color->map [^javafx.scene.paint.Color color]
+  {:r (.getRed color)
+   :g (.getGreen color)
+   :b (.getBlue color)
+   :a (.getOpacity color)})
 
 (deftype HighlightWindow
     [
@@ -128,54 +171,50 @@
   javafx.fxml.Initializable
   (^{:tag void}
    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
-   (println "INIT INIt INIT")
-   (doto list_highlight
-     (eeinit-listview @atom_table_contents)))
+   (init-listview list_highlight @atom_table_contents))
 
   IHighlightWindowFX
   (hello [this]
-    (->> @atom_table_contents
-         (map deref)
-         ))
-  (^{:tag void} on_btn_new [this ^javafx.event.ActionEvent event]
-   (.. @atom_table_contents
-       (add (atom
-             {:is-selected true
-              :filter-string (.getText txt_filter_string)
-              :color-background (let [cc (.getValue color_background)]
-                                  {:r (.getRed cc)
-                                   :g (.getGreen cc)
-                                   :b (.getBlue cc)
-                                   :a (.getOpacity cc)})
-              :color-forground (let [cc (.getValue color_foreground)]
-                                  {:r (.getRed cc)
-                                   :g (.getGreen cc)
-                                   :b (.getBlue cc)
-                                   :a (.getOpacity cc)})
-              :is-regex (.isSelected check_regex)})))
-   )
+    (map deref @atom_table_contents))
 
+  (^{:tag void} on_btn_new [this ^javafx.event.ActionEvent event]
+   (-> @atom_table_contents
+       (.add (atom
+              {:is-selected      true
+               :filter-string    (.getText txt_filter_string)
+               :color-background (color->map (.getValue color_background))
+               :color-forground  (color->map (.getValue color_foreground))
+               :is-regex         (.isSelected check_regex)}))))
 
   (^{:tag void} on_btn_remove [this ^javafx.event.ActionEvent event]
-   (let [items (.. list_highlight getItems)
-         selected (.. list_highlight
-                      getSelectionModel
-                      getSelectedItems)]
-     (println "[[[]]]" [(count selected) (count items)])
-     (.. items (removeAll selected))))
+   (let [items (-> list_highlight .getItems)
+         selected (-> list_highlight
+                      .getSelectionModel
+                      .getSelectedItems)]
+     (-> items (.removeAll selected))))
 
   (^{:tag void} on_btn_up [this ^javafx.event.ActionEvent event]
-   (let [selected (.. list_highlight
-                      getSelectionModel
-                      getSelectedItem)]
-     ))
+   (let [model (-> list_highlight .getSelectionModel)
+         index (-> model .getSelectedIndex)]
+     (when (pos? index)
+       (let [items (-> list_highlight .getItems)
+             next (-> items (.get (dec index)))]
+         (doto items
+           (.remove next)
+           (.add index next))
+         (.refresh list_highlight)))))
 
   (^{:tag void} on_btn_down [this ^javafx.event.ActionEvent event]
-   (let [selected (.. list_highlight
-                      getSelectionModel
-                      getSelectedItem)]
-     ))
-  )
+   (let [model (-> list_highlight .getSelectionModel)
+         index (-> model .getSelectedIndex)
+         items (-> list_highlight .getItems)]
+     (when (< index (dec (.size items)))
+       (let [next (-> items (.get (inc index)))]
+         (doto items
+           (.remove next)
+           (.add index next))
+         (.refresh list_highlight))))))
+
 
 
 (defn gen-HighlightWindow []
@@ -194,6 +233,7 @@
      )))
 
 (defn test-popup [window]
+  ;; TODO(kep): remove string hard coding.
   (let [fxml (clojure.java.io/resource "highlight.fxml")
         controller (gen-HighlightWindow)
         loader (doto (FXMLLoader. fxml)
