@@ -356,8 +356,8 @@
    ;;   (-> (impl/run @proc_adb)
    ;;       (async->tableobservable atom_table_contents)))
    (println "a")
-   (jjamppong.window.highlight-window/test-popup
-    (.getWindow (.getScene (.getSource event))))
+   (println "<<<<<<<<<<<" (jjamppong.window.highlight-window/test-popup
+                           (.getWindow (.getScene (.getSource event)))))
    (println "b")
    ;; (test-popup (.getWindow (.getScene (.getSource event))))
 

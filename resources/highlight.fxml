@@ -26,7 +26,7 @@
          <children>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <Button fx:id="btn_add" mnemonicParsing="false" onAction="#on_btn_add" prefWidth="100.0" text="ADD" />
+                  <Button fx:id="btn_new" mnemonicParsing="false" onAction="#on_btn_new" prefWidth="100.0" text="NEW" />
                   <Button fx:id="btn_remove" mnemonicParsing="false" onAction="#on_btn_remove" prefWidth="100.0" text="REMOVE" />
                   <Button fx:id="btn_up" mnemonicParsing="false" onAction="#on_btn_up" prefWidth="100.0" text="UP" />
                   <Button fx:id="btn_down" mnemonicParsing="false" onAction="#on_btn_down" prefWidth="100.0" text="DOWN" />
@@ -34,12 +34,12 @@
             </HBox>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <TextField fx:id="txt_fileter_string" />
+                  <TextField fx:id="txt_filter_string" />
                </children>
             </HBox>
             <HBox alignment="CENTER" layoutX="10.0" layoutY="170.0" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <CheckBox fx:id="check_regex11" mnemonicParsing="false" text="regex" />
+                  <CheckBox fx:id="check_regex" mnemonicParsing="false" text="regex" />
                </children>
             </HBox>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
@@ -47,7 +47,7 @@
                   <Label text="Background" />
                   <ColorPicker fx:id="color_background" />
                   <Label text="Foreground" />
-                  <ColorPicker fx:id="color_foregound" />
+                  <ColorPicker fx:id="color_foreground" />
                </children>
             </HBox>
          </children>

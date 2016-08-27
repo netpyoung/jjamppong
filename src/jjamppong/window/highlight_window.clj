@@ -40,74 +40,84 @@
 
 (defonce +ONCE+ (javafx.embed.swing.JFXPanel.))
 
-
-
 (definterface ItmHighlightFX
   (update [item])
   (^{:tag void} on_check [^javafx.event.ActionEvent event])
   )
 
+
 (deftype ItmHighlight
-    [
+    [^{:unsynchronized-mutable true} _item
      ^{FXML [] :unsynchronized-mutable true} check_example
      ^{FXML [] :unsynchronized-mutable true} lbl_filter_string
      ]
   javafx.fxml.Initializable
   (^{:tag void}
    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
-   (println [self, fxmlFileLocation, resources])
+   (println "===================================")
    )
   ItmHighlightFX
   (update [this item]
-    (println "FFFFF" [this item]))
+    (set! _item item)
+    (.setSelected check_example (@item :is-selected))
+    (.setText lbl_filter_string (str item)))
   (^{:tag void} on_check [this ^javafx.event.ActionEvent event]
-   (println "check!!"))
-  )
+   (swap! _item assoc :is-selected (.isSelected check_example))))
 
 
 (defn gen-NodeController []
-  (ItmHighlight. nil nil))
+  (ItmHighlight. false nil nil))
+
 
 (let [fxml (clojure.java.io/resource "itm_highlight.fxml")]
-  (defn get-cellfactory []
-    (let [is-initialized (atom false)]
-      (reify javafx.util.Callback
-        (call [_ param]
-          (proxy [javafx.scene.control.ListCell] []
-            (updateItem [item is-empty]
-              (proxy-super updateItem item is-empty)
-              (if (or is-empty (nil? item))
-                (.setGraphic this nil)
-                (if (or (not @is-initialized) (nil? (.getGraphic this)))
-                  (let [
-                        controller (gen-NodeController)
-                        loader (doto (FXMLLoader. fxml)
-                                 (.setController controller))
-                        node (.load loader)]
-                    (.. this (setGraphic node))
-                    (.. controller (update item))
-                    (println "init"))
-                  (.. this (update item)))))))))))
+  (defn gen-cellfactory []
+    (reify javafx.util.Callback
+      (call [_ param]
+        (println "TTTT" [_ param])
+        (proxy [javafx.scene.control.ListCell] []
+
+          (updateItem [item is-empty]
+            (proxy-super updateItem item is-empty)
+            (if (or is-empty (nil? item))
+              (.setGraphic this nil)
+              (if (or (nil? (.getGraphic this)))
+                (let [
+                      controller (gen-NodeController)
+                      loader (doto (FXMLLoader. fxml)
+                               (.setController controller))
+
+                      node (.load loader)]
+                  (.. this (setGraphic node))
+                  (println "XX1 " [item is-empty])
+                  (.. controller (update item))
+                  (println "XX2")
+                  (println "init")
+                  )
+                (println "FFFFFFFF")
+                ))))))))
+
 
 (defn eeinit-listview [listview items]
   (doto listview
-    (.setCellFactory (get-cellfactory))
     (.setItems items)
+    (.setCellFactory (gen-cellfactory))
     (.. (getSelectionModel)
         (setSelectionMode SelectionMode/MULTIPLE))))
 
 (definterface IHighlightWindowFX
-  (^{:tag void} on_btn_add [^javafx.event.ActionEvent event])
+  (hello [])
+  (^{:tag void} on_btn_new [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_remove [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_up [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_down [^javafx.event.ActionEvent event])
   )
 
+
 (deftype HighlightWindow
     [
      atom_table_contents
      ^{FXML [] :unsynchronized-mutable true} list_highlight
-     ^{FXML [] :unsynchronized-mutable true} btn_add
+     ^{FXML [] :unsynchronized-mutable true} btn_new
      ^{FXML [] :unsynchronized-mutable true} btn_remove
      ^{FXML [] :unsynchronized-mutable true} btn_up
      ^{FXML [] :unsynchronized-mutable true} btn_down
@@ -120,41 +130,63 @@
   javafx.fxml.Initializable
   (^{:tag void}
    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
+   (println "INIT INIt INIT")
    (doto list_highlight
-     (eeinit-listview @atom_table_contents))
+     (eeinit-listview @atom_table_contents)))
 
-   )
   IHighlightWindowFX
-  (^{:tag void} on_btn_add [this ^javafx.event.ActionEvent event]
-   (.add @atom_table_contents 1))
+  (hello [this]
+    (->> @atom_table_contents
+         (map deref)
+         ))
+  (^{:tag void} on_btn_new [this ^javafx.event.ActionEvent event]
+   (.. @atom_table_contents
+       (add (atom
+             {:is-selected true
+              :filter-string (.getText txt_filter_string)
+              :color-background (let [cc (.getValue color_background)]
+                                  {:r (.getRed cc)
+                                   :g (.getGreen cc)
+                                   :b (.getBlue cc)
+                                   :a (.getOpacity cc)})
+              :color-forground (let [cc (.getValue color_foreground)]
+                                  {:r (.getRed cc)
+                                   :g (.getGreen cc)
+                                   :b (.getBlue cc)
+                                   :a (.getOpacity cc)})
+              :is-regex (.isSelected check_regex)})))
+   )
+
 
   (^{:tag void} on_btn_remove [this ^javafx.event.ActionEvent event]
-   (let [items (.. list_highlight
-                   getSelectionModel
-                   getSelectedItems)]
-     (.. list_highlight getItems (removeAll items))
-     (.. list_highlight
-         getSelectionModel
-         clearSelection)
-
-     ))
+   (let [items (.. list_highlight getItems)
+         selected (.. list_highlight
+                      getSelectionModel
+                      getSelectedItems)]
+     (println "[[[]]]" [(count selected) (count items)])
+     (doseq [s selected]
+       (.. items (remove s)))))
 
   (^{:tag void} on_btn_up [this ^javafx.event.ActionEvent event]
-   ;; (.add @atom_table_contents 1)
+   (let [selected (.. list_highlight
+                      getSelectionModel
+                      getSelectedItem)]
+     ))
 
-   )
   (^{:tag void} on_btn_down [this ^javafx.event.ActionEvent event]
-   ;; (.add @atom_table_contents 1)
-
-   )
+   (let [selected (.. list_highlight
+                      getSelectionModel
+                      getSelectedItem)]
+     ))
   )
+
 
 (defn gen-HighlightWindow []
   (let [observable (FXCollections/observableArrayList [])]
     (HighlightWindow.
      (atom observable)
      nil                                ;list_highlight
-     nil                                ; btn_add
+     nil                                ; btn_new
      nil                                ; btn_remove
      nil                                ; btn_up
      nil                                ; btn_down
@@ -175,4 +207,5 @@
                 (.setTitle "jjamppong")
                 (.initModality Modality/APPLICATION_MODAL)
                 (.initOwner window)
-                (.showAndWait))]))
+                (.showAndWait))]
+    (.hello controller)))
