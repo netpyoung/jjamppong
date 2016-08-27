@@ -39,13 +39,6 @@
    [org.controlsfx.control.ListSelectionView]
    ))
 
-;;TODO(kep): need to manage this
-(defonce +ONCE+ (javafx.embed.swing.JFXPanel.))
-
-(definterface ItmHighlightFX
-  (update1 [item])
-  (^{:tag void} on_check [^javafx.event.ActionEvent event])
-  )
 
 
 (deftype ItmHighlight
@@ -58,7 +51,7 @@
    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
    )
 
-  ItmHighlightFX
+  jjamppong.protocols.ItmHighlightFX
   (update1 [this item]
     (set! _item item)
     (.setSelected check_example (@item :is-selected))
@@ -139,13 +132,7 @@
     (-> (.getSelectionModel)
         (.setSelectionMode SelectionMode/MULTIPLE))))
 
-(definterface IHighlightWindowFX
-  (hello [])
-  (^{:tag void} on_btn_new [^javafx.event.ActionEvent event])
-  (^{:tag void} on_btn_remove [^javafx.event.ActionEvent event])
-  (^{:tag void} on_btn_up [^javafx.event.ActionEvent event])
-  (^{:tag void} on_btn_down [^javafx.event.ActionEvent event])
-  )
+
 
 
 (defn color->map [^javafx.scene.paint.Color color]
@@ -173,7 +160,7 @@
    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
    (init-listview list_highlight @atom_table_contents))
 
-  IHighlightWindowFX
+  jjamppong.protocols.IHighlightWindowFX
   (hello [this]
     (map deref @atom_table_contents))
 
@@ -231,6 +218,7 @@
      nil                                ; color_background
      nil                                ; color_foreground
      )))
+
 
 (defn test-popup [window]
   ;; TODO(kep): remove string hard coding.

@@ -59,8 +59,6 @@
     (prn "old-state" old-state)
     (prn "new-state" new-state)))
 
-(defonce +ONCE+ (javafx.embed.swing.JFXPanel.))
-
 (defn alert [title header content]
   (let [alert (Alert. Alert$AlertType/INFORMATION)]
     (doto alert
@@ -344,24 +342,22 @@
 
   (^{:tag void}
    on_btn_start [this ^javafx.event.ActionEvent event]
-   ;; (when-let [device (.getSelectedItem (.getSelectionModel list_devices))]
-   ;;   (doto this
-   ;;     (.on_btn_stop event)
-   ;;     (.on_btn_clear event))
-   ;;   (.setDisable btn_clear false)
-   ;;   (.setDisable btn_start true)
-   ;;   (.setDisable btn_stop false)
-   ;;   (impl/update-status-message this device)
-   ;;   (reset! proc_adb (watcher/new-watcher device))
-   ;;   (-> (impl/run @proc_adb)
-   ;;       (async->tableobservable atom_table_contents)))
-   (println "a")
-   (println "<<<<<<<<<<<" (jjamppong.window.highlight-window/test-popup
-                           (.getWindow (.getScene (.getSource event)))))
-   (println "b")
-   ;; (test-popup (.getWindow (.getScene (.getSource event))))
+   (when-let [device (.getSelectedItem (.getSelectionModel list_devices))]
+     (doto this
+       (.on_btn_stop event)
+       (.on_btn_clear event))
+     (.setDisable btn_clear false)
+     (.setDisable btn_start true)
+     (.setDisable btn_stop false)
+     (impl/update-status-message this device)
+     (reset! proc_adb (watcher/new-watcher device))
+     (-> (impl/run @proc_adb)
+         (async->tableobservable atom_table_contents))))
 
-   )
+  (^{:tag void} on_btn_filter [this ^javafx.event.ActionEvent event]
+   (let [window (-> event .getSource .getScene .getWindow)
+         vals (jjamppong.window.highlight-window/test-popup window)]
+     (println "<<<<<<<<<<<"  vals)))
 
   (^{:tag void}
    on_btn_clear [this ^javafx.event.ActionEvent event]

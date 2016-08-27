@@ -102,6 +102,7 @@
                                     <Button fx:id="btn_clear" mnemonicParsing="false" onAction="#on_btn_clear" text="clear" />
                                     <Button fx:id="btn_start" mnemonicParsing="false" onAction="#on_btn_start" text="start" />
                                     <Button fx:id="btn_stop" mnemonicParsing="false" onAction="#on_btn_stop" text="stop" />
+                                    <Button fx:id="btn_filter" mnemonicParsing="false" onAction="#on_btn_filter" text="filter" />
                                  </children>
                               </HBox>
                               <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
