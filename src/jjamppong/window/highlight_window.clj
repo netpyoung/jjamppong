@@ -68,6 +68,7 @@
     [^{:unsynchronized-mutable true} _item
      ^{FXML [] :unsynchronized-mutable true} root
      ^{FXML [] :unsynchronized-mutable true} check_example
+     ^{FXML [] :unsynchronized-mutable true} bg_pane
      ^{FXML [] :unsynchronized-mutable true} lbl_filter_string]
 
   javafx.fxml.Initializable
@@ -83,8 +84,12 @@
       )
 
     (doto lbl_filter_string
-      (.setStyle (map-to->css @item))
+      ;; (.setStyle (map-to->css @item))
       (.setText  (str item)))
+
+    (doto bg_pane
+      (.setStyle (map-to->css @item)))
+
     ;; (.removeAll (.getStylesheets root))
     ;; (.add (.getStylesheets root) (map-to->css @item))
     ;; (doto root
@@ -99,6 +104,7 @@
   (ItmHighlight.
    false                                ;_item
    nil                                  ;root
+   nil                                  ;bg_pane
    nil                                  ;check_example
    nil                                  ;lbl_filter_string
    ))
@@ -161,17 +167,12 @@
                     (-> this (.setGraphic node)))
                   (-> controller (.update1 item)))))))))))
 
-
-
 (defn init-listview [listview items]
   (doto listview
     (.setItems items)
     (.setCellFactory (gen-cellfactory))
     (-> (.getSelectionModel)
         (.setSelectionMode SelectionMode/MULTIPLE))))
-
-
-
 
 (defn color->map [^javafx.scene.paint.Color color]
   {:r (.getRed color)
