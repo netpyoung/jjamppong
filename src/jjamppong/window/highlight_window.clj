@@ -8,6 +8,7 @@
    [clojure.reflect :as r]
    [clojure.string :as str]
    [named-re.re :as re]
+   [garden.core :refer [css]]
    [clojure.java.shell]
    [clojure.core.async :as async])
 
@@ -41,11 +42,34 @@
 
 
 
+(defn map-to->Color [m]
+  (let [{:keys [r g b a]} m]
+    (javafx.scene.paint.Color. r g b a)))
+
+(defn map-to->ColorCssStr [m]
+  (let [{:keys [r g b a]} m]
+    (str "rgba(" (int (* r 100))  "%," (int (* g 100)) "%," (int (* b 100)) "%," a ")" )))
+
+(defn map-to->css [m]
+  ;; ref: https://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html
+  (let [{:keys [color-background color-foreground]} m
+        fx-font "italic"
+        fx-foreground (map-to->ColorCssStr color-foreground)
+        fx-background (map-to->ColorCssStr color-background)]
+    (css
+     [:. {
+      :-fx-font fx-font
+      :-fx-base fx-background
+      :-fx-text-fill fx-foreground
+      }])))
+
+
 (deftype ItmHighlight
     [^{:unsynchronized-mutable true} _item
+     ^{FXML [] :unsynchronized-mutable true} root
      ^{FXML [] :unsynchronized-mutable true} check_example
-     ^{FXML [] :unsynchronized-mutable true} lbl_filter_string
-     ]
+     ^{FXML [] :unsynchronized-mutable true} lbl_filter_string]
+
   javafx.fxml.Initializable
   (^{:tag void}
    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
@@ -54,15 +78,30 @@
   jjamppong.protocols.ItmHighlightFX
   (update1 [this item]
     (set! _item item)
-    (.setSelected check_example (@item :is-selected))
-    (.setText lbl_filter_string (str item)))
+    (doto check_example
+      (.setSelected (@item :is-selected))
+      )
+
+    (doto lbl_filter_string
+      (.setStyle (map-to->css @item))
+      (.setText  (str item)))
+    ;; (.removeAll (.getStylesheets root))
+    ;; (.add (.getStylesheets root) (map-to->css @item))
+    ;; (doto root
+    ;;   (.setStyle (map-to->css @item)))
+    )
 
   (^{:tag void} on_check [this ^javafx.event.ActionEvent event]
    (swap! _item assoc :is-selected (.isSelected check_example))))
 
 
 (defn gen-NodeController []
-  (ItmHighlight. false nil nil))
+  (ItmHighlight.
+   false                                ;_item
+   nil                                  ;root
+   nil                                  ;check_example
+   nil                                  ;lbl_filter_string
+   ))
 
 (defn register-drag-event [cell]
   ;; ref: http://blog.ngopal.com.np/2012/05/06/javafx-drag-and-drop-cell-in-listview/
@@ -116,12 +155,11 @@
                       ;; (register-drag-event)
                       (.setUserData
                        {:node node
-                        :controller controller}))
-                    ))
-                (when (nil? (.getGraphic this))
-                  (let [{:keys [node controller]} (.getUserData this)]
-                    (-> this (.setGraphic node))
-                    (-> controller (.update1 item))))))))))))
+                        :controller controller}))))
+                (let [{:keys [node controller]} (.getUserData this)]
+                  (when (nil? (.getGraphic this))
+                    (-> this (.setGraphic node)))
+                  (-> controller (.update1 item)))))))))))
 
 
 
@@ -170,15 +208,17 @@
               {:is-selected      true
                :filter-string    (.getText txt_filter_string)
                :color-background (color->map (.getValue color_background))
-               :color-forground  (color->map (.getValue color_foreground))
-               :is-regex         (.isSelected check_regex)}))))
+               :color-foreground  (color->map (.getValue color_foreground))
+               :is-regex         (.isSelected check_regex)})))
+   (.refresh list_highlight))
 
   (^{:tag void} on_btn_remove [this ^javafx.event.ActionEvent event]
    (let [items (-> list_highlight .getItems)
          selected (-> list_highlight
                       .getSelectionModel
                       .getSelectedItems)]
-     (-> items (.removeAll selected))))
+     (-> items (.removeAll selected))
+     (.refresh list_highlight)))
 
   (^{:tag void} on_btn_up [this ^javafx.event.ActionEvent event]
    (let [model (-> list_highlight .getSelectionModel)
@@ -201,8 +241,6 @@
            (.remove next)
            (.add index next))
          (.refresh list_highlight))))))
-
-
 
 (defn gen-HighlightWindow []
   (let [observable (FXCollections/observableArrayList [])]
@@ -234,3 +272,12 @@
                 (.initOwner window)
                 (.showAndWait))]
     (.hello controller)))
+
+
+;; ======
+(-> {:is-selected      true
+     :filter-string    "test"
+     :color-background {:r 1.0 :g 1.0 :b 1.0 :a 1.0}
+     :color-foreground  {:r 1.0 :g 1.0 :b 1.0 :a 1.0}
+     :is-regex         false}
+    map-to->css)
