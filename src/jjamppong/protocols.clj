@@ -42,3 +42,11 @@
   (^{:tag void} on_btn_up [^javafx.event.ActionEvent event])
   (^{:tag void} on_btn_down [^javafx.event.ActionEvent event])
   )
+
+
+(defrecord FilterItem
+    [is-selected
+     filter-string
+     color-background
+     color-foreground
+     is-regex])

@@ -81,7 +81,7 @@
   (update1 [this item]
     (set! _item item)
     (doto check_example
-      (.setSelected (@item :is-selected))
+      (.setSelected (:is-selected @item))
       )
 
     (doto lbl_filter_string
@@ -158,9 +158,6 @@
                         loader (doto (FXMLLoader. fxml)
                                  (.setController controller))
                         node (.load loader)]
-
-
-
                     (doto this
                       ;; (register-drag-event)
                       (.setUserData
@@ -206,16 +203,19 @@
 
   jjamppong.protocols.IHighlightWindowFX
   (hello [this]
-    (map deref @atom_table_contents))
+    (->> @atom_table_contents
+         (map deref )
+         (mapv impl/map->FilterItem)))
 
   (^{:tag void} on_btn_new [this ^javafx.event.ActionEvent event]
    (-> @atom_table_contents
        (.add (atom
-              {:is-selected      true
+              (impl/map->FilterItem
+{:is-selected      true
                :filter-string    (.getText txt_filter_string)
                :color-background (color->map (.getValue color_background))
                :color-foreground  (color->map (.getValue color_foreground))
-               :is-regex         (.isSelected check_regex)})))
+               :is-regex         (.isSelected check_regex)}))))
    (.refresh list_highlight))
 
   (^{:tag void} on_btn_remove [this ^javafx.event.ActionEvent event]
@@ -248,8 +248,10 @@
            (.add index next))
          (.refresh list_highlight))))))
 
-(defn gen-HighlightWindow []
-  (let [observable (FXCollections/observableArrayList [])]
+(defn gen-HighlightWindow [filter-items]
+  (let [observable (->> filter-items
+                        (mapv atom)
+                        FXCollections/observableArrayList)]
     (HighlightWindow.
      (atom observable)
      nil                                ;list_highlight
@@ -264,10 +266,10 @@
      )))
 
 
-(defn test-popup [window]
+(defn test-popup [window filter-items]
   ;; TODO(kep): remove string hard coding.
   (let [fxml (clojure.java.io/resource "highlight.fxml")
-        controller (gen-HighlightWindow)
+        controller (gen-HighlightWindow filter-items)
         loader (doto (FXMLLoader. fxml)
                  (.setController controller))
         scene (Scene. (.load loader))
@@ -278,12 +280,3 @@
                 (.initOwner window)
                 (.showAndWait))]
     (.hello controller)))
-
-
-;; ======
-(-> {:is-selected      true
-     :filter-string    "test"
-     :color-background {:r 1.0 :g 1.0 :b 1.0 :a 1.0}
-     :color-foreground  {:r 1.0 :g 1.0 :b 1.0 :a 1.0}
-     :is-regex         false}
-    map-to->css)

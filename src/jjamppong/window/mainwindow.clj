@@ -49,15 +49,16 @@
     :filter-is-ignorecase false
     :filter-is-regex false
     :adb-command "adb"
+    :filters []
     }))
 
-(add-watch config-atom :watcher
-  (fn [key atom old-state new-state]
-    (prn "-- Atom Changed --")
-    (prn "key" key)
-    (prn "atom" atom)
-    (prn "old-state" old-state)
-    (prn "new-state" new-state)))
+;; (add-watch config-atom :watcher
+;;   (fn [key atom old-state new-state]
+;;     (prn "-- Atom Changed --")
+;;     (prn "key" key)
+;;     (prn "atom" atom)
+;;     (prn "old-state" old-state)
+;;     (prn "new-state" new-state)))
 
 (defn alert [title header content]
   (let [alert (Alert. Alert$AlertType/INFORMATION)]
@@ -231,21 +232,6 @@
            (logline->Log)
            (.add @atom-observable)))))
 
-;; (test-popup (.getWindow (.getScene (.getSource event))))
-(defn test-popup [window]
-  (let [fxml (clojure.java.io/resource "dialog.fxml")
-        ;; controller (gen-MainWindow)
-        ;; loader (doto (FXMLLoader. fxml)
-        ;;          (.setController controller))
-        loader (FXMLLoader. fxml)
-        scene (Scene. (.load loader))
-        stage (doto (.build (StageBuilder/create))
-                (.setScene scene)
-                (.setTitle "jjamppong")
-                (.initModality Modality/APPLICATION_MODAL)
-                (.initOwner window)
-                (.showAndWait))]))
-
 (defn get-devices []
   ;; TODO(kep): handle offline
   (->> (clojure.java.shell/sh "adb" "devices")
@@ -356,8 +342,10 @@
 
   (^{:tag void} on_btn_filter [this ^javafx.event.ActionEvent event]
    (let [window (-> event .getSource .getScene .getWindow)
-         vals (jjamppong.window.highlight-window/test-popup window)]
-     (println "<<<<<<<<<<<"  vals)))
+         ;;items [(impl/map->FilterItem {:is-selected true, :filter-string "", :color-background {:r 1.0, :g 1.0, :b 1.0, :a 1.0}, :color-foreground {:r 1.0, :g 1.0, :b 1.0, :a 1.0}, :is-regex false})]
+         items (:filters @config-atom)
+         vals (jjamppong.window.highlight-window/test-popup window items)]
+     (swap! config-atom assoc :filters vals)))
 
   (^{:tag void}
    on_btn_clear [this ^javafx.event.ActionEvent event]
