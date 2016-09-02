@@ -338,7 +338,7 @@
    (doto list_devices
      (.setItems (FXCollections/observableArrayList (get-devices))))
    (.selectFirst
-     (.getSelectionModel list_devices)))
+    (.getSelectionModel list_devices)))
 
   (^{:tag void}
    on_btn_start [this ^javafx.event.ActionEvent event]

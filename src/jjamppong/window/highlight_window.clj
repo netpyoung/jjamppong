@@ -1,4 +1,5 @@
 (ns jjamppong.window.highlight-window
+  (:gen-class)
   (:require
    [system.repl :refer [system]]
    [com.stuartsierra.component :as component]
@@ -157,6 +158,9 @@
                         loader (doto (FXMLLoader. fxml)
                                  (.setController controller))
                         node (.load loader)]
+
+
+
                     (doto this
                       ;; (register-drag-event)
                       (.setUserData
@@ -165,6 +169,7 @@
                 (let [{:keys [node controller]} (.getUserData this)]
                   (when (nil? (.getGraphic this))
                     (-> this (.setGraphic node)))
+                  ;; (println ["FFFFF " (.getAttribute controller :root)])
                   (-> controller (.update1 item)))))))))))
 
 (defn init-listview [listview items]

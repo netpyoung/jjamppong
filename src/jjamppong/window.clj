@@ -85,7 +85,6 @@
                          (handle [^ActionEvent event]
                            (when-not is-dev
                              (System/exit 0))))))]
-
           (register-drag-drop-event scene controller)
           (reset! _window controller)
           (reset! _stage stage))))

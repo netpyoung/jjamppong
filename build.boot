@@ -14,6 +14,7 @@
    [named-re "1.0.0"]
    [org.controlsfx/controlsfx "8.40.11"]
 
+   [org.projectlombok/lombok "1.16.10"]
 
    ;; boot
    [tolitius/boot-check "0.1.3" :scope "test"]
