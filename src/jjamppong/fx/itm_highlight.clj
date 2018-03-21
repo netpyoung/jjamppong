@@ -111,22 +111,27 @@
   jjamppong.interfaces.IItmHighlightFX
   (update1 [this item]
     (set! _item item)
-    (doto check_example
-      (.setSelected (:is-selected @item))
-      )
+    (let [{:keys [is-selected
+                  filter-string
+                  color-background
+                  color-foreground
+                  is-regex]} @item]
+      (doto check_example
+        (.setSelected is-selected)
+        )
 
-    (doto lbl_filter_string
-      ;; (.setStyle (map-to->css @item))
-      (.setText  (str item)))
+      (doto lbl_filter_string
+        ;; (.setStyle (map-to->css @item))
+        (.setText  filter-string))
 
-    (doto bg_pane
-      (.setStyle (map-to->css @item)))
+      (doto bg_pane
+        (.setStyle (map-to->css @item)))
 
-    ;; (.removeAll (.getStylesheets root))
-    ;; (.add (.getStylesheets root) (map-to->css @item))
-    ;; (doto root
-    ;;   (.setStyle (map-to->css @item)))
-    )
+      ;; (.removeAll (.getStylesheets root))
+      ;; (.add (.getStylesheets root) (map-to->css @item))
+      ;; (doto root
+      ;;   (.setStyle (map-to->css @item)))
+      ))
 
   (^{:tag void} on_check [this ^javafx.event.ActionEvent event]
    (swap! _item assoc :is-selected (.isSelected check_example))))
@@ -166,3 +171,115 @@
                     (-> this (.setGraphic node)))
                   ;; (println ["FFFFF " (.getAttribute controller :root)])
                   (-> controller (.update1 item)))))))))))
+
+(defn init-listview [listview items]
+  (doto listview
+    (.setItems items)
+    (.setCellFactory (gen-cellfactory))
+    (-> (.getSelectionModel)
+        (.setSelectionMode SelectionMode/MULTIPLE))))
+
+(defn color->map [^javafx.scene.paint.Color color]
+  {:r (.getRed color)
+   :g (.getGreen color)
+   :b (.getBlue color)
+   :a (.getOpacity color)})
+
+(deftype HighlightWindow
+    [
+     atom_table_contents
+     ^{FXML [] :unsynchronized-mutable true} list_highlight
+     ^{FXML [] :unsynchronized-mutable true} btn_new
+     ^{FXML [] :unsynchronized-mutable true} btn_remove
+     ^{FXML [] :unsynchronized-mutable true} btn_up
+     ^{FXML [] :unsynchronized-mutable true} btn_down
+     ^{FXML [] :unsynchronized-mutable true} check_regex
+     ^{FXML [] :unsynchronized-mutable true} txt_filter_string
+     ^{FXML [] :unsynchronized-mutable true} color_background
+     ^{FXML [] :unsynchronized-mutable true} color_foreground
+     ]
+
+  javafx.fxml.Initializable
+  (^{:tag void}
+   initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
+   (init-listview list_highlight @atom_table_contents))
+
+  jjamppong.protocols.IHighlightWindowFX
+  (hello [this]
+    (->> @atom_table_contents
+         (map deref )
+         (mapv impl/map->FilterItem)))
+
+  (^{:tag void} on_btn_new [this ^javafx.event.ActionEvent event]
+   (-> @atom_table_contents
+       (.add (atom
+              (impl/map->FilterItem
+               {:is-selected      true
+               :filter-string    (.getText txt_filter_string)
+               :color-background (color->map (.getValue color_background))
+               :color-foreground (color->map (.getValue color_foreground))
+               :is-regex         (.isSelected check_regex)}))))
+   (.setText txt_filter_string "")
+   (.refresh list_highlight))
+
+  (^{:tag void} on_btn_remove [this ^javafx.event.ActionEvent event]
+   (let [items (-> list_highlight .getItems)
+         selected (-> list_highlight
+                      .getSelectionModel
+                      .getSelectedItems)]
+     (-> items (.removeAll selected))
+     (.refresh list_highlight)))
+
+  (^{:tag void} on_btn_up [this ^javafx.event.ActionEvent event]
+   (let [model (-> list_highlight .getSelectionModel)
+         index (-> model .getSelectedIndex)]
+     (when (pos? index)
+       (let [items (-> list_highlight .getItems)
+             next (-> items (.get (dec index)))]
+         (doto items
+           (.remove next)
+           (.add index next))
+         (.refresh list_highlight)))))
+
+  (^{:tag void} on_btn_down [this ^javafx.event.ActionEvent event]
+   (let [model (-> list_highlight .getSelectionModel)
+         index (-> model .getSelectedIndex)
+         items (-> list_highlight .getItems)]
+     (when (< index (dec (.size items)))
+       (let [next (-> items (.get (inc index)))]
+         (doto items
+           (.remove next)
+           (.add index next))
+         (.refresh list_highlight))))))
+
+(defn gen-HighlightWindow [filter-items]
+  (let [observable (->> filter-items
+                        (mapv atom)
+                        FXCollections/observableArrayList)]
+    (HighlightWindow.
+     (atom observable)
+     nil                                ;list_highlight
+     nil                                ; btn_new
+     nil                                ; btn_remove
+     nil                                ; btn_up
+     nil                                ; btn_down
+     nil                                ; check_regex
+     nil                                ; txt_filter_string
+     nil                                ; color_background
+     nil                                ; color_foreground
+     )))
+
+(defn popup [window filter-items]
+  ;; TODO(kep): remove string hard coding.
+  (let [fxml (clojure.java.io/resource "highlight.fxml")
+        controller (gen-HighlightWindow filter-items)
+        loader (doto (FXMLLoader. fxml)
+                 (.setController controller))
+        scene (Scene. (.load loader))
+        stage (doto (.build (StageBuilder/create))
+                (.setScene scene)
+                (.setTitle "jjamppong")
+                (.initModality Modality/APPLICATION_MODAL)
+                (.initOwner window)
+                (.showAndWait))]
+    (.hello controller)))

@@ -242,7 +242,23 @@
        (map #(str/replace % #"\tdevice" ""))
        (map #(str/replace % #"\toffline" ""))))
 
-(deftype WindowMain
+(def filter-list-predicate
+  (f-to-predicate
+   (fn [p]
+     (let [{:keys [level message]} p
+           {:keys [tags filter-text filter-is-regex filter-is-ignorecase]} @config-atom]
+       (if-not (get tags level)
+         false
+         (if filter-is-regex
+           (if filter-is-ignorecase
+             (some? (re-find (re-pattern (str "(?i)" filter-text)) message))
+             (some? (re-find (re-pattern filter-text) message)))
+           (if filter-is-ignorecase
+             (str/includes? (str/lower-case message) (str/lower-case filter-text))
+
+             (str/includes? message filter-text))))))))
+
+(deftype MainWindow
          [proc_adb
           atom_table_contents
           filtered
@@ -299,21 +315,8 @@
   (update-predicate [this filter-list]
     ;; TODO(kep): too long. need to refactoring
     (.setPredicate
-     filter-list
-     (f-to-predicate
-      (fn [p]
-        (let [{:keys [level message]} p
-              {:keys [tags filter-text filter-is-regex filter-is-ignorecase]} @config-atom]
-          (if-not (get tags level)
-            false
-            (if filter-is-regex
-              (if filter-is-ignorecase
-                (some? (re-find (re-pattern (str "(?i)" filter-text)) message))
-                (some? (re-find (re-pattern filter-text) message)))
-              (if filter-is-ignorecase
-                (str/includes? (str/lower-case message) (str/lower-case filter-text))
-
-                (str/includes? message filter-text)))))))))
+     filter-list filter-list-predicate
+     ))
 
   ;; wtf this ugly interface declare
   jjamppong.interfaces.IWindowMainFX
@@ -346,6 +349,7 @@
    (let [window (-> event .getSource .getScene .getWindow)
          items (:filters @config-atom)
          vals (window-highlight/test-popup window items)]
+
      (swap! config-atom assoc :filters vals)))
 
   (^{:tag void}
