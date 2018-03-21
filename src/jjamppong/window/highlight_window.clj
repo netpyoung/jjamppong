@@ -80,22 +80,27 @@
   jjamppong.protocols.ItmHighlightFX
   (update1 [this item]
     (set! _item item)
-    (doto check_example
-      (.setSelected (:is-selected @item))
-      )
+    (let [{:keys [is-selected
+                  filter-string
+                  color-background
+                  color-foreground
+                  is-regex]} @item]
+      (doto check_example
+        (.setSelected is-selected)
+        )
 
-    (doto lbl_filter_string
-      ;; (.setStyle (map-to->css @item))
-      (.setText  (str item)))
+      (doto lbl_filter_string
+        ;; (.setStyle (map-to->css @item))
+        (.setText  filter-string))
 
-    (doto bg_pane
-      (.setStyle (map-to->css @item)))
+      (doto bg_pane
+        (.setStyle (map-to->css @item)))
 
-    ;; (.removeAll (.getStylesheets root))
-    ;; (.add (.getStylesheets root) (map-to->css @item))
-    ;; (doto root
-    ;;   (.setStyle (map-to->css @item)))
-    )
+      ;; (.removeAll (.getStylesheets root))
+      ;; (.add (.getStylesheets root) (map-to->css @item))
+      ;; (doto root
+      ;;   (.setStyle (map-to->css @item)))
+      ))
 
   (^{:tag void} on_check [this ^javafx.event.ActionEvent event]
    (swap! _item assoc :is-selected (.isSelected check_example))))
@@ -211,11 +216,12 @@
    (-> @atom_table_contents
        (.add (atom
               (impl/map->FilterItem
-{:is-selected      true
+               {:is-selected      true
                :filter-string    (.getText txt_filter_string)
                :color-background (color->map (.getValue color_background))
-               :color-foreground  (color->map (.getValue color_foreground))
+               :color-foreground (color->map (.getValue color_foreground))
                :is-regex         (.isSelected check_regex)}))))
+   (.setText txt_filter_string "")
    (.refresh list_highlight))
 
   (^{:tag void} on_btn_remove [this ^javafx.event.ActionEvent event]
@@ -265,8 +271,7 @@
      nil                                ; color_foreground
      )))
 
-
-(defn test-popup [window filter-items]
+(defn popup [window filter-items]
   ;; TODO(kep): remove string hard coding.
   (let [fxml (clojure.java.io/resource "highlight.fxml")
         controller (gen-HighlightWindow filter-items)

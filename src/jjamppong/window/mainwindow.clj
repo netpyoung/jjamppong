@@ -241,6 +241,22 @@
        (map #(str/replace % #"\tdevice" ""))
        (map #(str/replace % #"\toffline" ""))))
 
+(def filter-list-predicate
+  (f-to-predicate
+   (fn [p]
+     (let [{:keys [level message]} p
+           {:keys [tags filter-text filter-is-regex filter-is-ignorecase]} @config-atom]
+       (if-not (get tags level)
+         false
+         (if filter-is-regex
+           (if filter-is-ignorecase
+             (some? (re-find (re-pattern (str "(?i)" filter-text)) message))
+             (some? (re-find (re-pattern filter-text) message)))
+           (if filter-is-ignorecase
+             (str/includes? (str/lower-case message) (str/lower-case filter-text))
+
+             (str/includes? message filter-text))))))))
+
 (deftype MainWindow
          [proc_adb
           atom_table_contents
@@ -298,21 +314,8 @@
   (update-predicate [this filter-list]
     ;; TODO(kep): too long. need to refactoring
     (.setPredicate
-     filter-list
-     (f-to-predicate
-      (fn [p]
-        (let [{:keys [level message]} p
-              {:keys [tags filter-text filter-is-regex filter-is-ignorecase]} @config-atom]
-          (if-not (get tags level)
-            false
-            (if filter-is-regex
-              (if filter-is-ignorecase
-                (some? (re-find (re-pattern (str "(?i)" filter-text)) message))
-                (some? (re-find (re-pattern filter-text) message)))
-              (if filter-is-ignorecase
-                (str/includes? (str/lower-case message) (str/lower-case filter-text))
-
-                (str/includes? message filter-text)))))))))
+     filter-list filter-list-predicate
+     ))
 
   ;; wtf this ugly interface declare
   jjamppong.protocols.IMainWindowFX
@@ -342,9 +345,8 @@
 
   (^{:tag void} on_btn_filter [this ^javafx.event.ActionEvent event]
    (let [window (-> event .getSource .getScene .getWindow)
-         ;;items [(impl/map->FilterItem {:is-selected true, :filter-string "", :color-background {:r 1.0, :g 1.0, :b 1.0, :a 1.0}, :color-foreground {:r 1.0, :g 1.0, :b 1.0, :a 1.0}, :is-regex false})]
          items (:filters @config-atom)
-         vals (jjamppong.window.highlight-window/test-popup window items)]
+         vals (jjamppong.window.highlight-window/popup window items)]
      (swap! config-atom assoc :filters vals)))
 
   (^{:tag void}
