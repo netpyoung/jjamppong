@@ -42,6 +42,8 @@ When i was testing android app via `adb logcat`, It's not enough for me.
 
 
 ## TODO
+- [ ] make define.clj
+- [ ] optimize scroll view. why too slow.
 - [ ] adb path config
 - [ ] device list
   - [ ] left side show/hide

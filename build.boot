@@ -2,7 +2,7 @@
  :source-paths #{"src"}
  :resource-paths #{"resources"}
  :dependencies
- '[[org.clojure/clojure "1.9.0-alpha10"]
+ '[[org.clojure/clojure "1.9.0"]
    [org.clojars.ato/clojure-jsr223 "1.5.1"]
 
    ;; core
@@ -73,7 +73,7 @@
    (watch)
    (system :sys #'dev-system
            :auto true
-           :files ["highlight_window.clj" "layout.fxml" "layout.css"])
+           :files ["window_highlight.clj" "window_main.fxml" "global.css"])
    (repl :server true :init-ns 'jjamppong.core)))
 
 

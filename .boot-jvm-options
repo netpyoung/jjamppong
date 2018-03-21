@@ -1,2 +1,0 @@
--client -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xverify:none
-

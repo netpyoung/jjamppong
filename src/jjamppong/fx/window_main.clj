@@ -1,11 +1,12 @@
-(ns jjamppong.window.mainwindow
+(ns jjamppong.fx.window-main
   (:require
    [system.repl :refer [system]]
    [com.stuartsierra.component :as component]
    [jjamppong.macros :as m]
    [jjamppong.protocols :as impl]
+   [jjamppong.interfaces]
    [jjamppong.watcher :as watcher]
-   [jjamppong.window.highlight-window]
+   [jjamppong.fx.window-highlight :as window-highlight]
    [clojure.reflect :as r]
    [clojure.string :as str]
    [named-re.re :as re]
@@ -241,7 +242,7 @@
        (map #(str/replace % #"\tdevice" ""))
        (map #(str/replace % #"\toffline" ""))))
 
-(deftype MainWindow
+(deftype WindowMain
          [proc_adb
           atom_table_contents
           filtered
@@ -269,7 +270,7 @@
    (impl/init self)
    )
 
-  impl/IMainWindow
+  impl/IWindowMain
   (init [this]
     (when-let [proc @proc_adb]
       (impl/stop proc)
@@ -315,12 +316,13 @@
                 (str/includes? message filter-text)))))))))
 
   ;; wtf this ugly interface declare
-  jjamppong.protocols.IMainWindowFX
+  jjamppong.interfaces.IWindowMainFX
   (close [this]
     (impl/init this))
 
   (^{:tag void}
    on_btn_scan [this ^javafx.event.ActionEvent event]
+   (println list_devices)
    (doto list_devices
      (.setItems (FXCollections/observableArrayList (get-devices))))
    (.selectFirst
@@ -342,9 +344,8 @@
 
   (^{:tag void} on_btn_filter [this ^javafx.event.ActionEvent event]
    (let [window (-> event .getSource .getScene .getWindow)
-         ;;items [(impl/map->FilterItem {:is-selected true, :filter-string "", :color-background {:r 1.0, :g 1.0, :b 1.0, :a 1.0}, :color-foreground {:r 1.0, :g 1.0, :b 1.0, :a 1.0}, :is-regex false})]
          items (:filters @config-atom)
-         vals (jjamppong.window.highlight-window/test-popup window items)]
+         vals (window-highlight/test-popup window items)]
      (swap! config-atom assoc :filters vals)))
 
   (^{:tag void}
@@ -390,11 +391,11 @@
    (impl/update-predicate this filtered))
 )
 
-(defn gen-MainWindow []
+(defn gen-window-main []
   (let [observable (FXCollections/observableArrayList [])
         filtered (FilteredList. observable
                                 (f-to-predicate (fn [p] true)))]
-    (->MainWindow
+    (->WindowMain
      (atom nil)                             ;proc_adb
      (atom observable)                      ;atom_table_contents
      filtered                               ;filtered

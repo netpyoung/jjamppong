@@ -5,7 +5,7 @@
    [jjamppong.macros :as m]
    [jjamppong.protocols :as impl]
    [jjamppong.watcher :as watcher]
-   [jjamppong.window.mainwindow :as mainwindow]
+   [jjamppong.fx.window-main :as window-main]
    [clojure.reflect :as r]
    [clojure.string :as str]
    [named-re.re :as re]
@@ -14,7 +14,6 @@
 
 
   (:import
-   ;; [jjamppong.protocols.IMainWindowFX]
    [java.lang Enum]
    [java.net URL]
    [java.util ResourceBundle]
@@ -70,12 +69,12 @@
     (javafx.application.Platform/setImplicitExit false)
     (javafx.application.Platform/runLater
      #(do
-        (let [fxml (clojure.java.io/resource "layout.fxml")
-              controller (mainwindow/gen-MainWindow)
+        (let [fxml (clojure.java.io/resource "window_main.fxml")
+              controller (window-main/gen-window-main)
               loader (doto (FXMLLoader. fxml)
                        (.setController controller))
               scene (doto (Scene. (.load loader))
-                      (.. getStylesheets (add "layout.css")))
+                      (.. getStylesheets (add "global.css")))
               stage (doto (.build (StageBuilder/create))
                       (.setTitle "jjamppong")
                       (.setScene scene)
