@@ -178,14 +178,13 @@
 ;;   `(reify javafx.util.Callback
 ;;      (~'call [this# ~@args]
 ;;       ~@body)))
-
-(defn hello []
-  (let [V (javafx.css.PseudoClass/getPseudoClass "V")
-        D (javafx.css.PseudoClass/getPseudoClass "D")
-        I (javafx.css.PseudoClass/getPseudoClass "I")
-        W (javafx.css.PseudoClass/getPseudoClass "W")
-        E (javafx.css.PseudoClass/getPseudoClass "E")
-        F (javafx.css.PseudoClass/getPseudoClass "F")]
+(let [V (javafx.css.PseudoClass/getPseudoClass "V")
+      D (javafx.css.PseudoClass/getPseudoClass "D")
+      I (javafx.css.PseudoClass/getPseudoClass "I")
+      W (javafx.css.PseudoClass/getPseudoClass "W")
+      E (javafx.css.PseudoClass/getPseudoClass "E")
+      F (javafx.css.PseudoClass/getPseudoClass "F")]
+  (defn hello []
     (reify javafx.util.Callback
       (call [_ table]
         (proxy [TableRow] []
@@ -258,7 +257,7 @@
 
              (str/includes? message filter-text))))))))
 
-(deftype MainWindow
+(deftype WindowMain
          [proc_adb
           atom_table_contents
           filtered

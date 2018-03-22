@@ -204,11 +204,12 @@
    initialize [self, ^URL fxmlFileLocation, ^ResourceBundle resources]
    (init-listview list_highlight @atom_table_contents))
 
-  jjamppong.protocols.IHighlightWindowFX
+  jjamppong.interfaces.IWindowHighlightFX
   (hello [this]
     (->> @atom_table_contents
          (map deref )
-         (mapv impl/map->FilterItem)))
+         (mapv impl/map->FilterItem))
+    )
 
   (^{:tag void} on_btn_new [this ^javafx.event.ActionEvent event]
    (-> @atom_table_contents

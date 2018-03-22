@@ -1,6 +1,13 @@
 (ns jjamppong.protocols
   (:refer-clojure :exclude [load]))
 
+(defrecord FilterItem
+    [is-selected
+     filter-string
+     color-background
+     color-foreground
+     is-regex])
+
 ;;TODO(kep): need to manage this
 (defonce +ONCE+ (javafx.embed.swing.JFXPanel.))
 
