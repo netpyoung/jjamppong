@@ -257,6 +257,9 @@
 
              (str/includes? message filter-text))))))))
 
+(defn helloworld []
+  (println "hi"))
+
 (deftype WindowMain
          [proc_adb
           atom_table_contents
@@ -324,11 +327,13 @@
 
   (^{:tag void}
    on_btn_scan [this ^javafx.event.ActionEvent event]
-   (println list_devices)
-   (doto list_devices
-     (.setItems (FXCollections/observableArrayList (get-devices))))
-   (.selectFirst
-    (.getSelectionModel list_devices)))
+   ;; (println list_devices)
+   ;; (doto list_devices
+   ;;   (.setItems (FXCollections/observableArrayList (get-devices))))
+   ;; (.selectFirst
+   ;;  (.getSelectionModel list_devices))
+   (helloworld)
+)
 
   (^{:tag void}
    on_btn_start [this ^javafx.event.ActionEvent event]

@@ -7,20 +7,20 @@
 
    ;; core
    [environ "1.0.3"]
-   [garden "1.3.2"]
-   [org.danielsz/system "0.3.1"]
-   [funcool/beicon "2.2.0"]
-   [org.clojure/core.async "0.2.385"]
+   [garden "1.3.5"]
+   [org.danielsz/system "0.4.1"]
+   [funcool/beicon "4.1.0"]
+   [org.clojure/core.async "0.4.474"]
    [named-re "1.0.0"]
    [org.controlsfx/controlsfx "8.40.11"]
 
-   [org.projectlombok/lombok "1.16.10"]
+   [org.projectlombok/lombok "1.18.0"]
 
    ;; boot
-   [tolitius/boot-check "0.1.3" :scope "test"]
-   [cljfmt "0.5.3" :scope "test"]
+   [tolitius/boot-check "0.1.9" :scope "test"]
+   [cljfmt "0.5.7" :scope "test"]
    [boot-environ "1.0.3" :scope "test"]
-   [adzerk/boot-jar2bin "1.1.0" :scope "test"]
+   [adzerk/boot-jar2bin "1.1.1" :scope "test"]
    [adzerk/bootlaces "0.1.13" :scope "test"]])
 
 

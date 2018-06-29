@@ -1,7 +1,7 @@
 (ns jjamppong.core
   (:gen-class)
   (:require
-   [system.repl :refer [set-init! start]]
+   [system.repl :refer [set-init! start reset]]
    [jjamppong.systems :refer [main-system]]))
 
 (defn -main
