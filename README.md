@@ -1,3 +1,5 @@
+# don't evaluate me based on this code repo. I just try testing.
+
 # [WIP] Jjamppong
 
 `Jjamppong` is gui logcat written in [Clojure]
